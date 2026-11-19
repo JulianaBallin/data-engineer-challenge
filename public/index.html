@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Olist Insights | Entrar</title>
+<meta name="description" content="Dashboard analítico do Data Warehouse Olist.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 3 42 13.5v21L24 45 6 34.5v-21z' fill='%23f6851b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+<canvas id="hero3d"></canvas>
+<form class="login-card" id="form" autocomplete="on">
+  <div class="brand"><span data-mark style="display:contents"></span><b>Olist Insights</b></div>
+  <h1>Bem-vinda de volta</h1>
+  <p class="sub">Entre para acessar o dashboard do Data Warehouse.</p>
+  <div class="field"><label for="user">Usuário</label>
+    <div class="box"><input id="user" name="username" autocomplete="username" required autofocus></div></div>
+  <div class="field"><label for="pass">Senha</label>
+    <div class="box"><input id="pass" name="password" type="password" autocomplete="current-password" required>
+    <button type="button" class="toggle" id="toggle">Mostrar</button></div></div>
+  <div class="error" id="error" role="alert"></div>
+  <button class="btn-primary" id="submit">Entrar</button>
+  <p class="login-foot">Acesso restrito. Dados públicos do dataset Olist (Kaggle).</p>
+</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/js/mark.js"></script>
+<script src="/js/scene.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

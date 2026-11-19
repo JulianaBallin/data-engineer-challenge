@@ -6,3 +6,6 @@ data/raw/*
 data/processed/*
 data/warehouse/*
 !data/*/.gitkeep
+node_modules/
+.vercel/
+.env*

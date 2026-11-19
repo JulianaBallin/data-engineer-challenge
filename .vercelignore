@@ -1,0 +1,11 @@
+.venv
+data
+docs
+notebooks
+reports
+src
+sql
+AGENTE.md
+scripts
+node_modules
+.env*

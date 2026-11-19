@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Olist Insights | Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M24 3 42 13.5v21L24 45 6 34.5v-21z' fill='%23f6851b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span data-mark style="display:contents"></span><b>Olist Insights</b></div>
+  <span class="pill" title="Camada gold do DuckDB"><span class="dot"></span>Olist Mainnet · 2016 a 2018</span>
+  <div class="spacer"></div>
+  <button class="pill" id="account" title="Copiar identificador da sessão"><span class="avatar"></span><span id="who">...</span></button>
+  <button class="icon-btn" id="theme" title="Alternar tema">☾</button>
+  <button class="icon-btn" id="logout" title="Sair">⏻</button>
+</header>
+<main>
+  <section class="wallet">
+    <div class="label">Receita total (sem frete, pedidos não cancelados)</div>
+    <div class="balance mono" id="balance"><div class="skeleton" style="width:260px;margin:auto;height:56px"></div></div>
+    <div class="delta" id="balance-sub"></div>
+  </section>
+  <nav class="actions" id="tabs">
+    <button class="action active" data-tab="geral"><span class="circle">◎</span>Visão geral</button>
+    <button class="action" data-tab="vendas"><span class="circle">$</span>Vendas</button>
+    <button class="action" data-tab="logistica"><span class="circle">➜</span>Logística</button>
+    <button class="action" data-tab="satisfacao"><span class="circle">★</span>Satisfação</button>
+    <button class="action" data-tab="financeiro"><span class="circle">%</span>Financeiro</button>
+    <button class="action" data-tab="clientes"><span class="circle">☺</span>Clientes</button>
+    <button class="action" data-tab="d3"><span class="circle">⬢</span>Barras 3D</button>
+  </nav>
+
+  <section class="panel active" id="geral">
+    <div class="grid kpis" id="kpis"></div>
+    <div class="card"><h3>Receita mensal</h3><p class="q">Como a receita total varia mês a mês?</p>
+      <div class="chart-box tall"><canvas id="c-mensal"></canvas></div></div>
+  </section>
+
+  <section class="panel" id="vendas">
+    <div class="grid cols-2">
+      <div class="card"><h3>Top 10 categorias por receita</h3><p class="q">Pergunta 1A de Vendas.</p>
+        <div class="chart-box tall"><canvas id="c-top10"></canvas></div><div class="insight" id="i-vendas"></div></div>
+      <div class="card"><h3>Participação no total</h3><p class="q">Quanto cada categoria representa da receita.</p>
+        <div class="controls"><input class="search" id="search" placeholder="Filtrar categoria..."></div>
+        <table><thead><tr><th>Categoria</th><th class="num">Receita</th><th class="num">%</th></tr></thead><tbody id="t-share"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="panel" id="logistica">
+    <div class="grid cols-2">
+      <div class="card"><h3>Pedidos entregues com atraso</h3><p class="q">Pergunta 2B de Logística. Clique em uma barra para detalhar o estado.</p>
+        <div class="chart-box tall"><canvas id="c-atraso"></canvas></div><div class="insight" id="i-log"></div></div>
+      <div class="card"><h3>Detalhe por estado</h3>
+        <div class="controls">Estado: <select id="uf"></select></div>
+        <div class="stat-row" id="uf-stats"></div>
+        <h3 style="margin-top:22px">Prazo médio de entrega (dias)</h3><div class="chart-box"><canvas id="c-prazo"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="satisfacao">
+    <div class="grid cols-2">
+      <div class="card"><h3>Atraso x nota média</h3><p class="q">Pergunta 3B de Satisfação.</p>
+        <div class="chart-box"><canvas id="c-nota-atraso"></canvas></div><div class="insight" id="i-sat"></div></div>
+      <div class="card"><h3>Distribuição das notas</h3><p class="q">Quantidade de pedidos por nota de 1 a 5.</p>
+        <div class="chart-box"><canvas id="c-notas"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="financeiro">
+    <div class="card"><h3>Frete médio por estado do cliente</h3><p class="q">Pergunta 4B Financeira. Valor médio de frete por item.</p>
+      <div class="chart-box tall"><canvas id="c-frete"></canvas></div><div class="insight" id="i-fin"></div></div>
+  </section>
+
+  <section class="panel" id="clientes">
+    <div class="grid cols-2">
+      <div class="card"><h3>Clientes recorrentes</h3><p class="q">Pergunta 5A de Clientes e Pagamentos.</p>
+        <div class="chart-box"><canvas id="c-rec"></canvas></div><div class="insight" id="i-cli"></div></div>
+      <div class="card"><h3>Meios de pagamento</h3><p class="q">Quantidade de pagamentos por tipo.</p>
+        <div class="chart-box"><canvas id="c-pag"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="d3">
+    <div class="card" style="position:relative"><h3>Receita mensal em 3D</h3>
+      <p class="q">Arraste para girar, use a roda do mouse para aproximar e passe o mouse sobre uma barra.</p>
+      <div class="controls"><button class="pill" id="auto3d">Pausar rotação</button><button class="pill" id="replay3d">Reanimar</button></div>
+      <canvas id="bars3d"></canvas><div class="tip3d" id="tip3d"></div></div>
+  </section>
+</main>
+<footer>Pipeline ETL em DuckDB (bronze, silver, gold). Receita não é lucro: o dataset não possui custos.</footer>
+<div class="toast" id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/js/mark.js"></script>
+<script src="/js/scene.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
