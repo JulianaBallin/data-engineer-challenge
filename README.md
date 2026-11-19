@@ -114,9 +114,11 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
 
 - 7 abas, tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
 - Login com poliedro 3D animado e aba "Barras 3D" com a receita mensal (Three.js).
+- **Cadeia 3D (supply chain):** vendedor, marketplace, pagamento, distribuição, cliente e avaliação, com caminhão e pacotes em movimento e colunas proporcionais ao gasto (itens, total pago e frete estimado).
+- **Olli, assistente de dados (RAG):** chat flutuante que responde só com os dados do histórico. A API (`api/chat.js`, base em `api/_kb.js`) recupera trechos relevantes dos agregados e, se não houver o dado, avisa que não sabe. Com a variável `ANTHROPIC_API_KEY` o Claude redige a resposta usando apenas os trechos recuperados; sem ela, a Olli responde direto com os trechos (modo recuperação).
 - Senha verificada com `scrypt`; sessão em cookie `HttpOnly` assinado com HMAC.
 - Os dados ficam em arquivo privado e só saem por `/api/data` com sessão válida.
-- Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET`.
+- Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET` (opcional: `ANTHROPIC_API_KEY` para a Olli usar LLM).
 - Teste local: `node scripts/dev-server.js`.
 
 ![Fluxo de autenticação](docs/diagrams/auth_flow.png)
