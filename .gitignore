@@ -9,3 +9,4 @@ data/warehouse/*
 node_modules/
 .vercel/
 .env*
+docs/relatorio/*.html
