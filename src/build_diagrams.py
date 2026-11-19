@@ -1,4 +1,5 @@
 """Gera os diagramas SVG do projeto em docs/diagrams/ (arquitetura, camadas, modelo estrela e autenticação)."""
+import re
 from html import escape
 
 from config import ROOT
@@ -33,11 +34,21 @@ class Svg:
         for i, ln in enumerate(lines):
             self.text(x + 14, y + 52 + i * 19, ln, 12.5, 400, INK)
 
-    def arrow(self, x1, y1, x2, y2, label="", color=MUTED, dash=False):
+    def arrow(self, x1, y1, x2, y2, label="", color=MUTED, dash=False, mid=None, label_at=None, route=None):
+        """Seta ortogonal: reta quando alinhada, senão com quebras de 90 graus (H-V-H ou V-H-V)."""
         d = ' stroke-dasharray="6 5"' if dash else ""
-        self.add(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{color}" stroke-width="2"{d} marker-end="url(#ah)"/>')
+        if x1 == x2 or y1 == y2:
+            path = f"M{x1} {y1} L{x2} {y2}"; lx, ly = (x1 + x2) / 2, (y1 + y2) / 2 - 8
+        elif route == "hvh" or (route is None and abs(x2 - x1) >= abs(y2 - y1)):
+            m = mid if mid is not None else (x1 + x2) / 2
+            path = f"M{x1} {y1} H{m} V{y2} H{x2}"; lx, ly = (x1 + m) / 2, y1 - 8
+        else:
+            m = mid if mid is not None else (y1 + y2) / 2
+            path = f"M{x1} {y1} V{m} H{x2} V{y2}"; lx, ly = (x1 + x2) / 2, m - 6
+        self.add(f'<path d="{path}" fill="none" stroke="{color}" stroke-width="2" stroke-linejoin="miter"{d} marker-end="url(#ah)"/>')
         if label:
-            self.text((x1 + x2) / 2, (y1 + y2) / 2 - 8, label, 11.5, 600, color, "middle")
+            if label_at: self.text(label_at[0], label_at[1], label, 11.5, 600, color, label_at[2] if len(label_at) > 2 else "start")
+            else: self.text(lx, ly, label, 11.5, 600, color, "middle")
 
     def save(self, name):
         head = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.w} {self.h}" width="{self.w}" height="{self.h}" '
@@ -66,7 +77,7 @@ def architecture():
     s.box(30, 460, 330, 80, "Análise (SQL + notebook)", ["analytics.sql + Matplotlib: 5 perguntas", "reports/charts/*.png"], GREEN, GREEN_BG)
     s.box(400, 460, 330, 80, "Export (export_web.py)", ["Agregados da gold em JSON", "api/_data/dashboard.json (privado)"], GREEN, GREEN_BG)
     s.box(770, 460, 480, 80, "Vercel: login + API protegida + dashboard 3D", ["Cookie HttpOnly assinado (HMAC), senha com scrypt", "Chart.js e Three.js no navegador"], GREEN, GREEN_BG)
-    s.arrow(540, 420, 200, 460, color=GREEN); s.arrow(640, 420, 565, 460, color=GREEN); s.arrow(730, 500, 770, 500, color=GREEN)
+    s.arrow(540, 420, 200, 460, color=GREEN, mid=434, route="vhv"); s.arrow(640, 420, 565, 460, color=GREEN, mid=446, route="vhv"); s.arrow(730, 500, 770, 500, color=GREEN)
     s.save("architecture.svg")
 
 
@@ -106,10 +117,10 @@ def star():
     table(s, 900, 250, 340, "dim_seller", ["*seller_id", "zip_code_prefix", "city, state"], BLUE, BLUE_BG)
     s.arrow(330, 150, 500, 150, "customer_id"); s.arrow(330, 540, 500, 540, "product_id")
     s.arrow(500, 600, 330, 600, "customer_id", dash=True)
-    s.arrow(780, 520, 900, 140, "purchase_date", dash=True)
-    s.arrow(780, 560, 900, 300, "seller_id", dash=True)
+    s.arrow(780, 520, 900, 140, "purchase_date", dash=True, mid=840, label_at=(846, 225), route="hvh")
+    s.arrow(780, 560, 900, 300, "seller_id", dash=True, mid=872, label_at=(878, 440), route="hvh")
     s.arrow(640, 416, 640, 480, "order_id")
-    s.arrow(780, 520, 900, 520, "order_id")
+    s.arrow(780, 520, 900, 520, "order_id", label_at=(784, 512))
     s.text(30, 775, "Grão: fact_orders = 1 linha por pedido. fact_order_items = 1 por item. fact_payments = 1 por pagamento. Setas tracejadas: relacionamentos secundários.", 12, 400, MUTED)
     s.save("star_schema.svg")
 
@@ -143,4 +154,12 @@ if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     for f in (architecture, medallion, star, auth_sequence):
         f()
+    import subprocess
+    from PIL import Image
+    for svg in OUT.glob("*.svg"):
+        w, h = map(int, re.search(r'width="(\d+)" height="(\d+)"', svg.read_text()).groups())
+        html = OUT / "_tmp.html"; html.write_text(f"<html><body style='margin:0;overflow:hidden'>{svg.read_text()}</body></html>")
+        full = OUT / "_full.png"
+        subprocess.run(["google-chrome", "--headless=new", "--no-sandbox", "--hide-scrollbars", f"--window-size={w},{h + 150}", f"--screenshot={full}", f"file://{html}"], check=True, capture_output=True)
+        Image.open(full).crop((0, 0, w, h)).save(svg.with_suffix(".png")); html.unlink(); full.unlink()
     print("diagramas em", OUT)

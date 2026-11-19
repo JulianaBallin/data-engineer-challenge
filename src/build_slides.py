@@ -64,6 +64,29 @@ def card_grid(s, items, top=1.9, w=3.5, h=1.75, gap=0.4):
     return x0, top + 2 * h + gap
 
 
+def rows(s, items, top=1.65, bottom=6.7, lead_size=21, body_size=15):
+    """Linhas de texto com ênfase: número, frase-chave em negrito laranja e detalhe abaixo."""
+    gap = 0.16
+    h = (bottom - top - gap * (len(items) - 1)) / len(items)
+    for i, (lead, body) in enumerate(items):
+        y = top + i * (h + gap)
+        rect(s, LM + 0.1, y, 12.3, h, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE)
+        rect(s, LM + 0.1, y, 0.09, h, ORANGE)
+        c = rect(s, LM + 0.45, y + h / 2 - 0.3, 0.6, 0.6, ORANGE, MSO_SHAPE.OVAL)
+        text(s, LM + 0.45, y + h / 2 - 0.27, 0.6, 0.5, str(i + 1), 18, True, WHITE, PP_ALIGN.CENTER)
+        text(s, LM + 1.3, y + h / 2 - 0.42 if body else y + h / 2 - 0.25, 10.9, 0.5, lead, lead_size, True, DARK)
+        if body:
+            text(s, LM + 1.3, y + h / 2 + 0.02, 10.9, h / 2, body, body_size, False, MUTED)
+
+
+def tool_card(s, x, y, w, h, icon, n, title, body):
+    rect(s, x, y, w, h, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE)
+    rect(s, x + 0.12, y + 0.14, 0.9, 0.9, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
+    s.shapes.add_picture(str(ROOT / f"assets/icons/{icon}.png"), Inches(x + 0.2), Inches(y + 0.22), width=Inches(0.74))
+    text(s, x + 1.15, y + 0.08, w - 1.25, 0.4, f"{n}. {title}", 15, True, ORANGE)
+    text(s, x + 1.15, y + 0.42, w - 1.25, h - 0.45, body, 12, False, DARK)
+
+
 def card(s, x, y, w, h, big, small):
     rect(s, x, y, w, h, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE)
     text(s, x + 0.2, y + 0.2, w - 0.4, 0.9, big, 30, True, ORANGE)
@@ -82,10 +105,10 @@ s.shapes.add_picture(str(LOGO_W), Inches(9.2), Inches(5.95), width=Inches(3.4))
 
 # 2 problema
 s = slide("O problema")
-bullets(s, ["A Olist conecta pequenos lojistas a marketplaces e gera milhares de registros por dia.",
-            "Nove CSVs brutos: pedidos, itens, pagamentos, avaliações, clientes, vendedores, produtos, geolocalização e tradução.",
-            "Dados com duplicidades, datas inconsistentes, texto sem padrão e coordenadas repetidas aos milhares.",
-            "Objetivo: tornar a base confiável, reprodutível e pronta para responder perguntas de negócio."])
+rows(s, [("Marketplace com milhares de registros por dia", "A Olist conecta pequenos lojistas a grandes marketplaces."),
+         ("Nove CSVs brutos, sem padrão", "Pedidos, itens, pagamentos, avaliações, clientes, vendedores, produtos, geolocalização e tradução."),
+         ("Dados com ruído", "Duplicidades, datas inconsistentes, texto sem padrão e coordenadas repetidas aos milhares."),
+         ("Objetivo: base confiável e reprodutível", "Responder perguntas de negócio com SQL, gráficos e conclusões claras.")])
 
 # 3 base de dados
 s = slide("A base de dados")
@@ -95,12 +118,30 @@ text(s, 0, bottom + 0.3, 13.333, 0.4, "Fonte: Brazilian E-Commerce Public Datase
 
 # 4 qualidade
 s = slide("Problemas encontrados e tratamento")
-bullets(s, ["189 pedidos com cronologia inválida: sinalizados e fora das métricas de prazo, sem corrigir datas por suposição.",
-            "981.153 linhas de geolocalização redundantes: agregadas em 1 linha por prefixo de CEP.",
-            "814 review_id repetidos: a Gold usa 1 avaliação por pedido (a mais recente).",
-            "610 produtos sem categoria: rotulados 'desconhecida', sem inferir informação.",
-            "Integridade referencial verificada em 6 relações, sem perdas.",
-            "21 regras documentadas com contagem e justificativa em docs/data_quality.md."], size=18)
+rows(s, [("189 pedidos com cronologia inválida", "Sinalizados e fora das métricas de prazo, sem corrigir datas por suposição."),
+         ("981.153 linhas de geolocalização redundantes", "Agregadas em 1 linha por prefixo de CEP."),
+         ("814 review_id repetidos", "A Gold usa 1 avaliação por pedido (a mais recente)."),
+         ("610 produtos sem categoria", "Rotulados como 'desconhecida', sem inferir informação."),
+         ("Integridade referencial verificada em 6 relações", "Nenhuma perda. As 21 regras estão em docs/data_quality.md.")], lead_size=19, body_size=14)
+
+# 4b passo a passo com ferramentas
+s = slide("Passo a passo do desenvolvimento")
+T = [("kaggle", "Kaggle", "Download dos 9 CSVs brutos do dataset Olist para a camada raw, sem alterar."),
+     ("python", "Python", "Extract e Transform: leitura, limpeza, tipagem e 21 regras de qualidade."),
+     ("pandas", "pandas", "Padronização, nulos, duplicidades, datas e tabela derivada de prazos."),
+     ("apacheparquet", "Parquet", "Camada processada: 8 tabelas tratadas em formato colunar."),
+     ("duckdb", "DuckDB e SQL", "Load em bronze, silver e gold, com modelo estrela e fact_orders."),
+     ("jupyter", "Jupyter", "Notebook com as 5 consultas SQL, gráficos e conclusões de negócio."),
+     ("nodedotjs", "Node.js", "API com login (scrypt, cookie HttpOnly) e rota protegida de dados."),
+     ("chartdotjs", "Chart.js e Three.js", "Dashboard com gráficos clicáveis, cadeia 3D e barras 3D."),
+     ("vercel", "Vercel", "Deploy do dashboard e da API, com variáveis de ambiente seguras."),
+     ("github", "GitHub", "Versionamento com commits convencionais e README profissional."),
+     ("claude", "Claude Code (IA)", "Apoio em documentação, interface do dashboard e assistente Olli."),
+     ("threedotjs", "Three.js", "Cenas 3D: poliedro do login, supply chain e receita mensal.")]
+cw, ch_, gx, gy = 3.95, 1.4, 0.2, 0.16
+x0 = (13.333 - (3 * cw + 2 * gx)) / 2
+for i, (ic, tt, bd) in enumerate(T):
+    tool_card(s, x0 + (i % 3) * (cw + gx), 1.6 + (i // 3) * (ch_ + gy), cw, ch_, ic, i + 1, tt, bd)
 
 # 5 arquitetura
 s = slide("Arquitetura da solução")
@@ -139,12 +180,19 @@ text(s, LM, 5.6, 12, 1.4, ["7 abas, filtro por estado, busca, tema claro e escur
                             "Barras 3D da receita mensal (Three.js) e login com poliedro animado.",
                             "Senha com scrypt, cookie HttpOnly assinado com HMAC e dados em arquivo privado."], 15, gap=10)
 
+# 10b deploy, login e IA
+s = slide("Deploy, login e uso de IA")
+rows(s, [("Deploy na Vercel: data-engineer-challenge.vercel.app", "Frontend estático em public/ e funções Node em api/, publicados a cada push no GitHub (branch main)."),
+         ("Login com usuário e senha (ambiente de teste)", "Usuário: bemol    Senha: bemol@2026    Senha verificada com scrypt; sessão em cookie HttpOnly assinado com HMAC."),
+         ("Dados protegidos", "O JSON de dados fica em arquivo privado e só sai por /api/data com sessão válida (sem sessão: 401)."),
+         ("IA como apoio, com revisão humana", "Claude Code na documentação e na interface do dashboard. A assistente Olli responde só com os dados do histórico.")], lead_size=19, body_size=14)
+
 # 11 conclusoes
 s = slide("Conclusões e próximos passos")
-bullets(s, ["Base confiável: regras auditáveis, camadas separadas e nenhum dado inventado.",
-            "Alavancas de negócio: reduzir atrasos (impacto direto na nota) e estimular a recompra.",
-            "Próximos passos: orquestração (Airflow ou Dagster), testes de dados automatizados e carga incremental.",
-            "IA (Claude Code) usada para documentação e apoio ao frontend e à interface de apresentação do dashboard."], size=20)
+rows(s, [("Base confiável", "Regras auditáveis, camadas separadas e nenhum dado inventado."),
+         ("Alavancas de negócio", "Reduzir atrasos (impacto direto na nota) e estimular a recompra."),
+         ("Próximos passos", "Orquestração (Airflow ou Dagster), testes de dados automatizados e carga incremental."),
+         ("Projeção com cautela", "Cenários e regressão linear nos próximos 12 meses, sempre com a margem de erro à vista.")])
 
 # 12 encerramento
 s = slide("", dark=True)
