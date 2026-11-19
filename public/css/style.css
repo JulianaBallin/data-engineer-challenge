@@ -163,3 +163,61 @@ input[type=range] { accent-color: var(--primary); width: 160px; }
   #who { display: none; } #account { padding: 5px; }
   .olli-fab { right: 14px; bottom: 14px; width: 60px; height: 60px; } .olli-panel { right: 12px; bottom: 86px; width: calc(100vw - 24px); }
 }
+
+/* ---------- Refinamento visual: sem linhas divisórias, superfícies tonais e cantos grandes ---------- */
+:root { --border: transparent; --grid: rgba(60,60,70,.07); --bg: #f4f4f7; --surface: #ffffff; --surface-2: #eceef2; --shadow: 0 18px 50px -18px rgba(30,30,60,.25); --r: 26px; }
+:root[data-theme="dark"] { --border: transparent; --grid: rgba(255,255,255,.06); --bg: #0f0f12; --surface: #1a1a1f; --surface-2: #25252c; --shadow: 0 22px 60px -20px rgba(0,0,0,.7); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --border: transparent; --grid: rgba(255,255,255,.06); --bg: #0f0f12; --surface: #1a1a1f; --surface-2: #25252c; --shadow: 0 22px 60px -20px rgba(0,0,0,.7); } }
+body { background-image: radial-gradient(900px 520px at 88% -120px, color-mix(in srgb, var(--primary) 26%, transparent), transparent 70%), radial-gradient(760px 480px at -8% 220px, color-mix(in srgb, #7b5cff 18%, transparent), transparent 70%), radial-gradient(700px 420px at 50% 110%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%); }
+
+/* barra de navegação flutuante, em pílula */
+.topbar { margin: 14px auto 0; width: min(1180px, calc(100% - 28px)); border-radius: 999px; padding: 9px 12px 9px 20px; background: color-mix(in srgb, var(--surface) 78%, transparent); backdrop-filter: blur(18px); box-shadow: var(--shadow); border: 0; }
+.pill, .icon-btn { border: 0; background: var(--surface-2); }
+.pill:hover, .icon-btn:hover { background: color-mix(in srgb, var(--primary) 18%, var(--surface-2)); }
+.menu button.on { box-shadow: 0 6px 18px -4px color-mix(in srgb, var(--primary) 70%, transparent); }
+
+/* hero sem divisória, com brilho animado */
+.hero { background: none; border: 0; position: relative; }
+.hero::before { content: ""; position: absolute; inset: -20px 0 0; background: radial-gradient(420px 220px at 30% 40%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 70%), radial-gradient(380px 220px at 72% 55%, color-mix(in srgb, #7b5cff 18%, transparent), transparent 70%); animation: drift 14s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes drift { to { transform: translate3d(40px, 14px, 0) scale(1.08); } }
+.hero-in { position: relative; padding-top: 28px; }
+.wallet .balance { font-size: clamp(44px, 8vw, 78px); font-weight: 800; letter-spacing: -.035em; }
+.wallet .label { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; }
+.crumbs { font-size: 12px; }
+
+/* cards e superfícies */
+.card { border: 0; border-radius: var(--r); padding: 26px; box-shadow: var(--shadow); background: var(--surface); }
+.card.kpi, .kpi { border-radius: 22px; }
+.kpi:hover { transform: translateY(-4px); box-shadow: 0 24px 60px -18px color-mix(in srgb, var(--primary) 45%, transparent); }
+.insight { border: 0; border-radius: 18px; padding: 16px 18px; background: color-mix(in srgb, var(--primary) 11%, var(--surface-2)); }
+.insight.warn { background: color-mix(in srgb, var(--bad) 12%, var(--surface-2)); }
+.action .circle { box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--primary) 80%, transparent); }
+.action.active .circle { outline: 0; box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 30%, transparent), 0 16px 34px -10px color-mix(in srgb, var(--primary) 90%, transparent); }
+th, td { border: 0; }
+tbody tr:nth-child(odd) td { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+tbody tr td:first-child { border-radius: 12px 0 0 12px; } tbody tr td:last-child { border-radius: 0 12px 12px 0; }
+select, .search { border: 0; border-radius: 999px; padding: 10px 16px; background: var(--surface-2); }
+.steps li { border: 0; border-radius: 18px; } .steps li.on { box-shadow: 0 0 0 2px var(--primary) inset; }
+#bars3d, #supply3d { border-radius: 20px; }
+
+/* botões */
+.btn-primary { box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--primary) 75%, transparent); }
+.btn-primary:hover { box-shadow: 0 16px 34px -8px color-mix(in srgb, var(--primary) 85%, transparent); }
+
+/* login */
+.login-card { border: 0; border-radius: 30px; box-shadow: var(--shadow); }
+.field .box { border: 0; border-radius: 16px; }
+
+/* rodapé: gradiente e nenhuma linha */
+.site-foot { border: 0; background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--primary) 10%, var(--bg))); margin-top: 56px; }
+.foot-bar { border: 0; opacity: .8; }
+.foot-logo { border-radius: 12px; }
+
+/* Olli */
+.olli-panel { border: 0; border-radius: 28px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.55); }
+.olli-form { border: 0; background: var(--surface); }
+.olli-form input { border: 0; background: var(--surface-2); }
+.chips button { border: 0; background: var(--surface-2); }
+.chips button:hover { background: color-mix(in srgb, var(--primary) 20%, var(--surface-2)); }
+.toast { border: 0; }
+.hero { overflow: hidden; } html, body { overflow-x: clip; }

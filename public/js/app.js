@@ -16,7 +16,7 @@ function insight(id, lines) { $(id).innerHTML = "<b>Conclusão de negócio</b><u
 function chart(id, cfg) {
   charts[id]?.destroy();
   Chart.defaults.color = css("--muted"); Chart.defaults.font.family = "inherit";
-  const scales = cfg.type === "doughnut" ? {} : { x: { grid: { display: false }, ...(cfg.options?.scales?.x || {}) }, y: { grid: { color: css("--border") }, ...(cfg.options?.scales?.y || {}) } };
+  const scales = cfg.type === "doughnut" ? {} : { x: { grid: { display: false }, ...(cfg.options?.scales?.x || {}) }, y: { grid: { color: css("--grid") || "rgba(128,128,128,.12)", drawBorder: false }, border: { display: false }, ...(cfg.options?.scales?.y || {}) } };
   charts[id] = new Chart($(id), { ...cfg, options: { ...cfg.options, responsive: true, maintainAspectRatio: false, animation: { duration: 900 }, plugins: { legend: { display: cfg.type === "doughnut" }, ...(cfg.options?.plugins || {}) }, scales } });
   return charts[id];
 }
