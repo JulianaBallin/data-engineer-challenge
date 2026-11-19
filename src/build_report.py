@@ -49,6 +49,39 @@ def sql_of(name):
     return f"<pre>{escape(m.group(1).strip())}</pre>"
 
 
+QUESTIONS = [
+    ("8.1 Vendas (1a): quais são as 10 categorias com maior receita?", "q1_top10_categorias_receita", "01a_top10_categorias_receita.png", "Figura 4: top 10 categorias por receita."),
+    ("8.2 Vendas (1b): como a receita total varia mês a mês?", "q1b_receita_mensal", "01b_receita_mensal.png", "Figura 5: receita mensal."),
+    ("8.3 Logística (2a): qual o tempo médio de entrega, em dias, por estado?", "q2a_prazo_uf", "02a_prazo_medio_uf.png", "Figura 6: prazo médio de entrega por UF."),
+    ("8.4 Logística (2b): qual a porcentagem de pedidos entregues com atraso?", "q2_pct_atraso", "02b_pct_atraso_uf.png", "Figura 7: pedidos atrasados por UF."),
+    ("8.5 Satisfação (3a): como se distribuem as notas de 1 a 5?", "q3a_distribuicao_notas", "03a_distribuicao_notas.png", "Figura 8: distribuição das notas."),
+    ("8.6 Satisfação (3b): pedidos atrasados têm nota média menor?", "q3_nota_atraso", "03b_nota_media_atraso.png", "Figura 9: nota média por situação de entrega."),
+    ("8.7 Financeiro (4a): qual a receita por categoria e sua participação no total?", "q4a_receita_share_categoria", "04a_receita_share_categoria.png", "Figura 10: receita e participação por categoria."),
+    ("8.8 Financeiro (4b): qual o valor médio do frete por estado do cliente?", "q4_frete_medio_uf", "04b_frete_medio_uf.png", "Figura 11: frete médio por UF."),
+    ("8.9 Clientes (5a): qual a porcentagem de clientes que compraram mais de uma vez?", "q5_clientes_recorrentes", "05a_clientes_recorrentes.png", "Figura 12: clientes por recorrência."),
+    ("8.10 Pagamentos (5b): quais os meios de pagamento mais usados?", "q5b_meios_pagamento", "05b_meios_pagamento.png", "Figura 13: meios de pagamento."),
+]
+
+
+def conclusoes():
+    """Conclusões de negócio geradas pelo notebook executado (uma lista de linhas por pergunta, na ordem)."""
+    nb = json.loads((ROOT / "notebooks" / "exploratory_analysis.ipynb").read_text(encoding="utf-8"))
+    out = []
+    for c in nb["cells"]:
+        for o in c.get("outputs", []):
+            md = "".join(o.get("data", {}).get("text/markdown", []))
+            if md.startswith("**Conclusão"):
+                out.append([re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escape(l[2:])).replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>") for l in md.replace("\\$", "$").splitlines() if l.startswith("- ")])
+    return out
+
+
+def analise_html():
+    cs, html = conclusoes(), ""
+    for (titulo, q, chart, cap), c in zip(QUESTIONS, cs):
+        html += f"<h3>{titulo}</h3>{sql_of(q)}{img(CHARTS_DIR / chart, cap, '86%')}<p class=\"concl\"><b>Conclusão.</b> {' '.join(c)}</p>"
+    return html
+
+
 def build_sections():
     k = D["kpis"][0]
     t = D["q1_top10_categorias_receita"]; share = D["categorias_share"]
@@ -117,37 +150,29 @@ def build_sections():
 <ul><li><b>Sem imputação.</b> Nulos permanecem nulos. A única exceção é a categoria ausente, rotulada <i>desconhecida</i>.</li><li><b>Cronologia inconsistente</b> (189 pedidos) é sinalizada e excluída das métricas de prazo, sem correção por suposição.</li><li><b>Avaliações:</b> o <code>review_id</code> se repete em pedidos distintos; a gold usa uma avaliação por pedido (a mais recente).</li><li><b>Integridade referencial:</b> seis relacionamentos verificados, todos sem registros órfãos.</li></ul>"""))
 
     S.append(("s8", "8 Análise exploratória", f"""
-<p>Foi escolhida uma pergunta por tópico. Receita é a soma de <code>price</code> (sem frete) de pedidos não cancelados ou indisponíveis e não deve ser lida como lucro. Os números abaixo vêm do warehouse e as conclusões são geradas pelo notebook a partir dos mesmos resultados.</p>
-<h3>8.1 Vendas (1A): quais são as 10 categorias com maior receita?</h3>
-{sql_of("q1_top10_categorias_receita")}
-{ch("01_top10_categorias_receita.png", "Figura 4: top 10 categorias por receita.")}
-{table(["Categoria", "Receita", "% do total"], [(r["categoria"], brl(r["receita"]), num(r["pct"], 2) + "%") for r in share])}
-<p class="concl"><b>Conclusão.</b> A categoria líder é <i>{t[0]["categoria"]}</i> ({brl(t[0]["receita"])}). As três maiores somam {num(100*top3/k["receita"],1)}% da receita de {brl(k["receita"])}. A receita é concentrada em poucas categorias, o que orienta prioridades de estoque e marketing.</p>
-<h3>8.2 Logística (2B): qual a porcentagem de pedidos entregues com atraso?</h3>
-{sql_of("q2_pct_atraso")}
-{ch("02_pct_atraso_uf.png", "Figura 5: pedidos atrasados por UF do cliente.")}
-<p class="concl"><b>Conclusão.</b> {num(glob["pct_atraso"],1)}% dos {num(glob["pedidos_entregues"])} pedidos entregues chegaram após a data estimada. A UF com maior atraso é {ufs[0]["uf"]} ({num(ufs[0]["pct_atraso"],1)}%) e a menor é {ufs[-1]["uf"]} ({num(ufs[-1]["pct_atraso"],1)}%). Estados acima da média pedem revisão de transportadoras ou de prazos prometidos.</p>
-<h3>8.3 Satisfação (3B): pedidos atrasados têm nota média menor?</h3>
-{sql_of("q3_nota_atraso")}
-{ch("03_nota_media_atraso.png", "Figura 6: nota média por situação de entrega.")}
-<p class="concl"><b>Conclusão.</b> Pedidos com atraso têm nota média {num(n["Com atraso"],2)} contra {num(n["No prazo"],2)} dos entregues no prazo, diferença de {num(n["No prazo"]-n["Com atraso"],2)} ponto. O atraso está associado a pior satisfação (correlação, não causalidade). Reduzir atrasos é uma alavanca direta de avaliação.</p>
-<h3>8.4 Financeiro (4B): qual o valor médio do frete por estado do cliente?</h3>
-{sql_of("q4_frete_medio_uf")}
-{ch("04_frete_medio_uf.png", "Figura 7: frete médio por item e UF.")}
-<p class="concl"><b>Conclusão.</b> O frete médio é mais alto em {f[0]["uf"]} ({brl(f[0]["frete_medio"],2)}) e mais baixo em {f[-1]["uf"]} ({brl(f[-1]["frete_medio"],2)}). A diferença regional pode afetar conversão e competitividade. Frete é valor cobrado por item e não o custo logístico real.</p>
-<h3>8.5 Clientes e pagamentos (5A): qual a porcentagem de clientes que compraram mais de uma vez?</h3>
-{sql_of("q5_clientes_recorrentes")}
-{ch("05_clientes_recorrentes.png", "Figura 8: clientes por recorrência (customer_unique_id).")}
-<p class="concl"><b>Conclusão.</b> Apenas {num(rec["Mais de uma compra"]["pct"],1)}% dos clientes compraram mais de uma vez. A base é dominada por compras únicas, o que indica baixa retenção. O meio de pagamento mais usado é {pay_top["tipo"]} ({num(100*pay_top["pagamentos"]/tot_pg,1)}% dos pagamentos). Campanhas de recompra têm grande espaço de crescimento.</p>"""))
+<p>Foram respondidas as <b>dez perguntas</b>, duas por tópico, cada uma com consulta SQL, gráfico e conclusão de negócio. Receita é a soma de <code>price</code> (sem frete) de pedidos não cancelados ou indisponíveis e não deve ser lido como lucro. As consultas rodam sobre a camada gold e as conclusões são geradas pelo notebook a partir dos resultados.</p>
+{analise_html()}"""))
 
     S.append(("s9", "9 Dashboard e autenticação", f"""
 <p>Os resultados do warehouse foram exportados para JSON e expostos em um dashboard interativo, com tema escuro e claro, seções por tópico (visão geral, vendas, logística, satisfação, financeiro, clientes e projeção), filtros, detalhamento por estado, contadores animados e uma página de Cadeia 3D (Three.js): um mapa com a estrada do pedido, em que cada etapa pode ser clicada para ver só os números dela.</p>
-{img(REL / "img" / "dashboard-geral.png", "Figura 9: visão geral do dashboard.", "92%")}
-{img(REL / "img" / "cadeia-3d.png", "Figura 10: mapa 3D da cadeia do pedido.", "92%")}
-{img(REL / "img" / "dashboard-login.png", "Figura 11: tela de login com cena 3D.", "70%")}
+<h3>Telas do sistema</h3>
+<p>Prints do dashboard em produção (tema claro). O menu superior tem <b>Dashboard</b> e <b>Cadeia 3D</b>; dentro do dashboard há sete seções.</p>
+{img(REL / "img" / "dashboard-login.png", "Figura 14: tela de login com cena 3D.", "78%")}
+{img(REL / "img" / "tela-visao-geral.png", "Figura 15: Dashboard, visão geral.", "64%")}
+{img(REL / "img" / "tela-vendas.png", "Figura 16: Dashboard, vendas.", "64%")}
+{img(REL / "img" / "tela-logistica.png", "Figura 17: Dashboard, logística.", "64%")}
+{img(REL / "img" / "tela-satisfacao.png", "Figura 18: Dashboard, satisfação.", "64%")}
+{img(REL / "img" / "tela-financeiro.png", "Figura 19: Dashboard, financeiro.", "64%")}
+{img(REL / "img" / "tela-clientes.png", "Figura 20: Dashboard, clientes.", "64%")}
+{img(REL / "img" / "tela-projecao.png", "Figura 21: Dashboard, projeção com regressão linear e cenários.", "64%")}
+{img(REL / "img" / "tela-cadeia-3d.png", "Figura 22: Cadeia 3D, mapa completo.", "86%")}
+{img(REL / "img" / "tela-cadeia-etapa.png", "Figura 23: Cadeia 3D, detalhes apenas da etapa clicada.", "86%")}
+{img(REL / "img" / "tela-olli.png", "Figura 24: assistente Olli respondendo só com os dados do histórico.", "86%")}
+{img(REL / "img" / "tela-notebook.png", "Figura 25: notebook no Jupyter, com a justificativa da modelagem.", "86%")}
+{img(REL / "img" / "tela-notebook-grafico.png", "Figura 26: notebook no Jupyter, com resultado, gráfico e conclusão de negócio.", "86%")}
 <h3>9.1 Autenticação</h3>
 <p>O Vercel hospeda apenas arquivos estáticos e funções; por isso um login feito só no navegador não protegeria os dados. A solução usa funções serverless: a senha é verificada com scrypt contra um hash guardado em variável de ambiente, e a sessão é um cookie HttpOnly, Secure e SameSite=Strict assinado com HMAC-SHA256 e expiração de 8 horas. Os dados ficam em arquivo privado (<code>api/_data</code>), fora da pasta pública, e só são entregues pela rota <code>/api/data</code> com sessão válida.</p>
-{img(DOCS_DIR / "diagrams" / "auth_flow.svg", "Figura 12: fluxo de autenticação e acesso aos dados.")}"""))
+{img(DOCS_DIR / "diagrams" / "auth_flow.svg", "Figura 27: fluxo de autenticação e acesso aos dados.")}"""))
 
     S.append(("s9b", "10 Projeção, cadeia 3D e assistente Olli", """
 <h2>10.1 Projeção de receita</h2>

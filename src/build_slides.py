@@ -122,8 +122,8 @@ def chart_slide(title, img, lead, lines):
     s.shapes.add_picture(str(ROOT / img), Inches(LM + 0.1), Inches(1.65 + (5.1 - h) / 2), width=Inches(w))
     x = LM + 0.1 + w + 0.4; pw = 13.333 - LM - 0.1 - x
     pn = rect(s, x, 1.65, pw, 5.1, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE); pn.adjustments[0] = 0.04; rect(s, x, 1.65, 0.09, 5.1, ORANGE)
-    text(s, x + 0.35, 1.95, pw - 0.6, 1.2, lead, 20, True, DARK)
-    text(s, x + 0.35, 3.0, pw - 0.6, 3.6, lines, 15, False, MUTED, gap=12, spacing=1.1)
+    text(s, x + 0.35, 1.9, pw - 0.6, 0.6, lead, 18, True, ORANGE)
+    text(s, x + 0.35, 2.55, pw - 0.6, 4.0, ["•  " + l for l in lines], 14, False, DARK, gap=12, spacing=1.08)
 
 
 def fig_slide(title, img, caption=None, top=1.45, max_h=5.35, max_w=None):
@@ -192,11 +192,18 @@ fig_slide("Camadas Bronze, Silver e Gold", "docs/diagrams/medallion.png", "Pipel
 star = Image.open(ROOT / "docs/diagrams/star_schema.png"); star.crop((15, 66, 1265, 762)).save(OUT / "img/star_crop.png")
 fig_slide("Modelo estrela na Gold", "docs/apresentacao/img/star_crop.png", max_h=5.45, top=1.4)
 
+# justificativa da modelagem
+s = slide("Modelagem: por que camadas e modelo estrela?")
+rows(s, [("Bronze: rastreabilidade", "Cópia fiel dos 9 CSVs (tudo texto): qualquer número pode ser auditado até a origem."),
+         ("Silver: qualidade reexecutável", "Limpeza, tipagem e 21 regras documentadas, sem inventar dados: cada correção tem motivo e contagem."),
+         ("Gold: modelo estrela para análise", "Fatos (itens, pagamentos e a derivada fact_orders com prazo e atraso) e dimensões simples: poucas junções e menos erro."),
+         ("Evita duplicação de linhas", "Uma avaliação por pedido e uma coordenada por CEP: as métricas não são infladas pelos joins.")], lead_size=19, body_size=14)
+
 # 9 notebook
 s = slide("Análise no Jupyter Notebook")
-Image.open(OUT / "img/jupyter-notebook.png").crop((0, 0, 1790, 1000)).save(OUT / "img/jupyter_crop.png")
+Image.open(OUT / "img/jupyter-notebook.png").crop((160, 130, 2100, 1350)).save(OUT / "img/jupyter_crop.png")
 im = Image.open(OUT / "img/jupyter_crop.png"); r = im.width / im.height
-h = 4.6; w = h * r
+h = 4.75; w = h * r
 s.shapes.add_picture(str(OUT / "img/jupyter_crop.png"), Inches((13.333 - w) / 2), Inches(1.5), height=Inches(h))
 text(s, LM, 6.4, CW, 0.4, "Notebook executado no Jupyter: consulta SQL no DuckDB, tabela de resultado e gráfico gerado com Matplotlib.", 14, True, DARK, PP_ALIGN.CENTER)
 
@@ -205,30 +212,24 @@ s = slide("Resultados: indicadores")
 card_grid(s, [("R$ 13,49 mi", "receita sem frete (receita não é lucro)"), ("96.096", "clientes únicos"), ("R$ 137,42", "ticket médio"),
               ("6,78 %", "pedidos entregues com atraso"), ("2,27 x 4,29", "nota média com atraso x no prazo"), ("3,04 %", "clientes que compraram mais de uma vez")])
 
-# 11 a 15 graficos, um por slide
-top = D["categorias_share"]; uf = sorted([r for r in D["q2_pct_atraso"] if r["uf"] and r["pedidos_entregues"] >= 200], key=lambda r: -r["pct_atraso"])
-fr = D["q4_frete_medio_uf"]
-chart_slide("Vendas: 10 categorias com maior receita", "reports/charts/01_top10_categorias_receita.png",
-            "Receita concentrada em poucas categorias",
-            [f"A líder, health_beauty, fatura R$ {top[0]['receita']/1e6:.2f} mi ({top[0]['pct']:.1f}% do total).".replace(".", ",", 2) if False else f"A líder, health_beauty, soma {top[0]['pct']:.1f}% da receita total.".replace(".", ","),
-             f"As 3 maiores somam {sum(x['pct'] for x in top[:3]):.1f}% da receita.".replace(".", ","),
-             "Estoque e marketing devem priorizar essas categorias."])
-chart_slide("Logística: pedidos entregues com atraso por estado", "reports/charts/02_pct_atraso_uf.png",
-            "Atraso é regional",
-            [f"Alagoas ({uf[0]['pct_atraso']:.1f}%) e Maranhão ({uf[1]['pct_atraso']:.1f}%) lideram os atrasos.".replace(".", ","),
-             f"Média nacional: {D['kpis'][0]['pct_atraso']:.2f}%.".replace(".", ","),
-             "Norte e Nordeste pedem revisão de rotas e prazos prometidos."])
-chart_slide("Satisfação: nota média com atraso x no prazo", "reports/charts/03_nota_media_atraso.png",
-            "O atraso derruba a nota em quase 2 pontos",
-            ["Pedidos no prazo: nota média 4,29.", "Pedidos atrasados: nota média 2,27.", "Cumprir o prazo é a maior alavanca de satisfação."])
-chart_slide("Financeiro: frete médio por estado", "reports/charts/04_frete_medio_uf.png",
-            "Frete mais caro nos estados mais distantes",
-            [f"{fr[0]['uf']} paga R$ {fr[0]['frete_medio']:.2f} por item, o maior frete.".replace(".", ","),
-             f"{fr[-1]['uf']} paga R$ {fr[-1]['frete_medio']:.2f}, o menor.".replace(".", ","),
-             "A diferença regional pode afetar a conversão de vendas."])
-chart_slide("Clientes: recompra", "reports/charts/05_clientes_recorrentes.png",
-            "Só 3,04% compraram mais de uma vez",
-            ["2.888 clientes compraram mais de uma vez.", "92.102 compraram uma única vez.", "Há grande espaço para campanhas de recompra e pós-venda."])
+# graficos: uma pergunta por slide, com a conclusao de negocio calculada pelo notebook
+def conclusoes():
+    nb = json.loads((ROOT / "notebooks" / "exploratory_analysis.ipynb").read_text(encoding="utf-8"))
+    out = []
+    for c in nb["cells"]:
+        for o in c.get("outputs", []):
+            md = "".join(o.get("data", {}).get("text/markdown", []))
+            if md.startswith("**Conclusão"):
+                out.append([l[2:].replace("**", "").replace("\\$", "$") for l in md.splitlines() if l.startswith("- ")])
+    return out
+
+QS = [("Vendas (1a): 10 categorias com maior receita", "01a_top10_categorias_receita"), ("Vendas (1b): receita mês a mês", "01b_receita_mensal"),
+      ("Logística (2a): tempo médio de entrega por estado", "02a_prazo_medio_uf"), ("Logística (2b): pedidos entregues com atraso", "02b_pct_atraso_uf"),
+      ("Satisfação (3a): distribuição das notas", "03a_distribuicao_notas"), ("Satisfação (3b): nota média, atraso x no prazo", "03b_nota_media_atraso"),
+      ("Financeiro (4a): receita e participação por categoria", "04a_receita_share_categoria"), ("Financeiro (4b): frete médio por estado", "04b_frete_medio_uf"),
+      ("Clientes (5a): clientes que compraram mais de uma vez", "05a_clientes_recorrentes"), ("Pagamentos (5b): meios de pagamento mais usados", "05b_meios_pagamento")]
+for (tt, f), c in zip(QS, conclusoes()):
+    chart_slide(tt, f"reports/charts/{f}.png", "Conclusão de negócio", c)
 
 # 16 login, Olli e cadeia 3D (um slide so)
 s = slide("Login, assistente Olli e Cadeia 3D")
