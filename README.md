@@ -109,14 +109,14 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
 
 <p align="center">
   <img src="docs/relatorio/img/dashboard-geral.png" alt="Visão geral do dashboard" width="49%">
-  <img src="docs/relatorio/img/dashboard-d3.png" alt="Barras 3D de receita mensal" width="49%">
+  <img src="docs/relatorio/img/cadeia-3d.png" alt="Mapa 3D da cadeia do pedido" width="49%">
 </p>
 
 - **Online:** https://data-engineer-challenge.vercel.app (login de teste: `bemol` / `bemol@2026`).
-- 9 abas, tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
-- Login com poliedro 3D animado e aba "Barras 3D" com a receita mensal (Three.js).
+- Menu com **Dashboard** (visão geral, vendas, logística, satisfação, financeiro, clientes e projeção) e **Cadeia 3D**. Tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
+- Login com poliedro 3D animado (Three.js).
 - **Projeção:** regressão linear nos próximos 12 meses (intervalo de 95%, ajuste fraco) e cenários anuais (-5%, 0%, +15%) sobre o ritmo dos últimos 6 meses. São estimativas com margem de erro grande, e o dataset não tem custos, então só se projetam receita, pedidos, frete e total pago.
-- **Cadeia 3D (supply chain):** vendedor, marketplace, pagamento, distribuição, cliente e avaliação, com caminhão e pacotes em movimento e colunas proporcionais ao gasto (itens, total pago e frete estimado).
+- **Cadeia 3D (supply chain):** mapa realista com estrada sinuosa, rio e árvores e seis estações (vendedores, marketplace, pagamento, distribuição, cliente e avaliação), com caminhão e pacotes em movimento. Pilhas de moedas mostram o gasto (itens, total pago e frete). Ao clicar em uma etapa, a câmera voa até ela e o painel lateral mostra só os números daquela etapa.
 - **Olli, assistente de dados (RAG):** chat flutuante que responde só com os dados do histórico. A API (`api/chat.js`, base em `api/_kb.js`) recupera trechos relevantes dos agregados e, se não houver o dado, avisa que não sabe. Com a variável `ANTHROPIC_API_KEY` o Claude redige a resposta usando apenas os trechos recuperados; sem ela, a Olli responde direto com os trechos (modo recuperação).
 - Senha verificada com `scrypt`; sessão em cookie `HttpOnly` assinado com HMAC.
 - Os dados ficam em arquivo privado e só saem por `/api/data` com sessão válida.

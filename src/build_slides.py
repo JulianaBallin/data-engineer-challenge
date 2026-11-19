@@ -230,27 +230,27 @@ chart_slide("Clientes: recompra", "reports/charts/05_clientes_recorrentes.png",
             "Só 3,04% compraram mais de uma vez",
             ["2.888 clientes compraram mais de uma vez.", "92.102 compraram uma única vez.", "Há grande espaço para campanhas de recompra e pós-venda."])
 
-# 16 dashboard
-s = slide("Dashboard protegido por login")
-s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-geral.png"), Inches(LM + 0.1), Inches(1.5), width=Inches(5.5))
-s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-d3.png"), Inches(7.0), Inches(1.5), width=Inches(5.5))
-text(s, LM + 0.1, 5.65, CW - 0.2, 1.2, ["9 abas, filtro por estado, busca, tema claro e escuro e gráficos clicáveis.",
-                            "Barras 3D da receita mensal (Three.js) e login com poliedro animado.",
-                            "Senha com scrypt, cookie HttpOnly assinado com HMAC e dados em arquivo privado."], 15, gap=10)
-
-# 17 cadeia 3D e Olli
-s = slide("Cadeia 3D e assistente Olli")
-rows(s, [("Supply chain em 3D", "Vendedor, marketplace, pagamento, distribuição, cliente e avaliação, com caminhão, pacotes e colunas de gasto."),
-         ("Frete: cerca de 14% do total pago", "R$ 2,2 mi de R$ 16,0 mi pagos pelos clientes. Só existe o que os dados trazem: sem indústria nem estoque."),
-         ("Olli responde só com os dados históricos", "Busca trechos relevantes (RAG) e, se não houver o dado, avisa que não sabe."),
-         ("Projeções também na Olli", "Regressão linear e cenários, sempre com a ressalva de incerteza.")], lead_size=19, body_size=14)
-
-# 18 deploy, login e IA
-s = slide("Deploy, login e uso de IA")
-rows(s, [("Deploy na Vercel: data-engineer-challenge.vercel.app", "Frontend estático em public/ e funções Node em api/, publicados a cada push no GitHub (branch main)."),
-         ("Login com usuário e senha (ambiente de teste)", "Usuário: bemol    Senha: bemol@2026    Senha verificada com scrypt; sessão em cookie HttpOnly assinado com HMAC."),
-         ("Dados protegidos", "O JSON de dados fica em arquivo privado e só sai por /api/data com sessão válida (sem sessão: 401)."),
-         ("IA como apoio, com revisão humana", "Claude Code na documentação e na interface do dashboard. A assistente Olli responde só com os dados do histórico.")], lead_size=19, body_size=14)
+# 16 login, Olli e cadeia 3D (um slide so)
+s = slide("Login, assistente Olli e Cadeia 3D")
+cw3, gap3, top3, h3 = 4.0, 0.25, 1.6, 5.15
+x03 = (13.333 - (3 * cw3 + 2 * gap3)) / 2
+def col(i, title, bullets, draw):
+    x = x03 + i * (cw3 + gap3)
+    rect(s, x, top3, cw3, h3, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE).adjustments[0] = 0.05
+    draw(x)
+    text(s, x + 0.3, top3 + 2.75, cw3 - 0.6, 0.5, title, 19, True, ORANGE)
+    text(s, x + 0.3, top3 + 3.25, cw3 - 0.6, 1.8, bullets, 13, False, DARK, gap=7)
+def pic(path, w=cw3 - 0.4, h=2.35):
+    def f(x):
+        im = Image.open(path); r = im.width / im.height; ww = w; hh = ww / r
+        if hh > h: hh = h; ww = hh * r
+        s.shapes.add_picture(str(path), Inches(x + (cw3 - ww) / 2), Inches(top3 + 0.2), width=Inches(ww))
+    return f
+def olli_icon(x):
+    s.shapes.add_picture(str(ROOT / "assets/logo/olli.png"), Inches(x + (cw3 - 1.9) / 2), Inches(top3 + 0.3), width=Inches(1.9))
+col(0, "Login seguro", ["Usuário e senha: senha com scrypt", "Sessão em cookie HttpOnly assinado (HMAC)", "Dados privados: sem sessão, API responde 401"], pic(OUT / "img/login.png"))
+col(1, "Olli, assistente de dados", ["Chat que responde só com o histórico (RAG)", "Se não houver o dado, ela avisa", "Projeções com regressão e cenários, sempre com a margem de erro"], olli_icon)
+col(2, "Cadeia 3D", ["Mapa do vendedor ao cliente", "Pilhas de moedas: itens, total pago e frete (14%)", "Clique em uma etapa para ver só os números dela"], pic(OUT / "img/mapa-3d.png"))
 
 # 19 conclusoes
 s = slide("Conclusões e próximos passos")

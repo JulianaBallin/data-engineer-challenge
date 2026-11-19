@@ -2,7 +2,7 @@ const $ = (id) => document.getElementById(id);
 const brl = (v, d = 0) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: d, minimumFractionDigits: d });
 const num = (v, d = 0) => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: d, minimumFractionDigits: d });
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const charts = {}; let D, scene3d, chain3d;
+const charts = {}; let D, chain3d;
 
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); }
 
@@ -68,32 +68,39 @@ function render() {
   chart("c-pag", { type: "doughnut", data: { labels: pg.map((x) => x.tipo), datasets: [{ data: pg.map((x) => x.pagamentos), backgroundColor: [O, BLUE, G, "#c3a2ff", "#8b929a"], borderColor: css("--surface") }] }, options: { cutout: "55%" } });
 }
 
-function show3d() {
-  if (scene3d) return;
-  scene3d = window.OI_scene.bars($("bars3d"), $("tip3d"), D.receita_mensal, (v) => brl(v));
-  $("auto3d").onclick = () => { const on = scene3d.toggleAuto(); $("auto3d").textContent = on ? "Pausar rotação" : "Retomar rotação"; };
-  $("replay3d").onclick = () => scene3d.replay();
-}
-
 function showSupply() {
   if (chain3d) return;
-  const k = D.kpis[0], pago = D.pagamentos.reduce((a, x) => a + x.valor, 0);
-  const frete = D.q4_frete_medio_uf.reduce((a, x) => a + x.frete_medio * x.itens, 0);
+  const k = D.kpis[0], pago = D.pagamentos.reduce((a, x) => a + x.valor, 0), pq = D.pagamentos.reduce((a, x) => a + x.pagamentos, 0);
+  const frete = D.q4_frete_medio_uf.reduce((a, x) => a + x.frete_medio * x.itens, 0), fr = D.q4_frete_medio_uf, pz = [...D.prazo_uf].sort((a, b) => b.dias - a.dias);
+  const nt = D.notas.reduce((a, x) => a + x.pedidos, 0), n5 = D.notas.find((x) => x.nota === 5).pedidos;
+  const [ca, np] = [D.q3_nota_atraso.find((x) => x.situacao === "Com atraso"), D.q3_nota_atraso.find((x) => x.situacao === "No prazo")];
+  const PAGN = { credit_card: "Cartão de crédito", boleto: "Boleto", voucher: "Voucher", debit_card: "Cartão de débito" };
   const S = [
-    { model: "vendedor", name: "Vendedores", metric: "3.095 vendedores", detail: `112.650 itens vendidos<br>Receita de itens: ${brl(k.receita)}`, cost: k.receita / pago, costLabel: brl(k.receita) },
-    { model: "marketplace", name: "Marketplace", metric: `${num(k.pedidos)} pedidos`, detail: `${num(k.pedidos)} pedidos, ticket médio ${brl(k.ticket_medio, 2)}` },
-    { model: "pagamento", name: "Pagamento", metric: brl(pago), detail: `Total pago pelos clientes: ${brl(pago)}<br>Cartão de crédito lidera (${num(D.pagamentos[0].pagamentos)} pagamentos)`, cost: 1, costLabel: brl(pago) },
-    { model: "distribuicao", name: "Distribuição e frete", metric: `frete ≈ ${brl(frete)}`, detail: `Frete estimado: ${brl(frete)} (${num((frete / pago) * 100, 1)}% do pago)`, cost: frete / pago, costLabel: brl(frete) },
-    { model: "cliente", name: "Cliente", metric: `${num(k.prazo_medio, 1)} dias`, detail: `${num(k.clientes)} clientes únicos<br>Prazo médio ${num(k.prazo_medio, 1)} dias, ${num(k.pct_atraso, 2)}% com atraso` },
-    { model: "avaliacao", name: "Avaliação", metric: `nota ${num(k.nota_media, 2)}`, detail: `Nota média ${num(k.nota_media, 2)}<br>Atraso derruba a nota de 4,29 para 2,27` },
+    { model: "vendedor", name: "Vendedores", kicker: "Etapa 1", metric: "3.095", short: "vendedores", cost: k.receita / pago, costLabel: brl(k.receita), share: k.receita / pago,
+      about: "Lojistas que anunciam no marketplace e despacham os produtos. Aqui nasce a receita de itens da cadeia.",
+      facts: [["Vendedores ativos", "3.095"], ["Itens vendidos", "112.650"], ["Receita de itens", brl(k.receita)], ["Receita por vendedor", brl(k.receita / 3095)]] },
+    { model: "marketplace", name: "Marketplace", kicker: "Etapa 2", metric: num(k.pedidos), short: "pedidos", 
+      about: "Onde o cliente escolhe, compra e acompanha o pedido. Concentra o catálogo e a vitrine das categorias.",
+      facts: [["Pedidos", num(k.pedidos)], ["Ticket médio", brl(k.ticket_medio, 2)], ["Clientes únicos", num(k.clientes)], ["Categoria líder", `${D.q1_top10_categorias_receita[0].categoria} (${num(D.categorias_share[0].pct, 1)}%)`]] },
+    { model: "pagamento", name: "Pagamento", kicker: "Etapa 3", metric: brl(pago / 1e6, 1).replace(",0", "") + " mi", short: "pagos pelos clientes", cost: 1, costLabel: brl(pago), share: 1,
+      about: "Cobrança do pedido: itens mais frete. O cartão de crédito domina, seguido pelo boleto.",
+      facts: [["Total pago", brl(pago)], ...D.pagamentos.slice(0, 3).map((x) => [PAGN[x.tipo] || x.tipo, `${num(x.pagamentos)} (${num((x.pagamentos / pq) * 100, 1)}%)`])] },
+    { model: "distribuicao", name: "Distribuição e frete", kicker: "Etapa 4", metric: brl(frete / 1e6, 1).replace(",0", "") + " mi", short: "de frete (estimado)", cost: frete / pago, costLabel: brl(frete), share: frete / pago,
+      about: "Centro de distribuição que separa, embala e despacha. O frete representa uma fatia relevante do total pago.",
+      facts: [["Frete estimado", brl(frete)], ["Fatia do total pago", num((frete / pago) * 100, 1) + "%"], ["Frete mais caro", `${fr[0].uf}: ${brl(fr[0].frete_medio, 2)}`], ["Frete mais barato", `${fr.at(-1).uf}: ${brl(fr.at(-1).frete_medio, 2)}`]] },
+    { model: "cliente", name: "Entrega ao cliente", kicker: "Etapa 5", metric: num(k.prazo_medio, 1) + " dias", short: "prazo médio de entrega",
+      about: "O último trecho: do despacho até a porta do cliente. É onde os atrasos acontecem e a satisfação é decidida.",
+      facts: [["Prazo médio", num(k.prazo_medio, 1) + " dias"], ["Pedidos atrasados", num(k.pct_atraso, 2) + "%"], ["Entrega mais lenta", `${pz[0].uf}: ${num(pz[0].dias, 1)} dias`], ["Recompra", num(D.q5_clientes_recorrentes.find((x) => x.perfil.startsWith("Mais")).pct, 2) + "%"]] },
+    { model: "avaliacao", name: "Avaliação", kicker: "Etapa 6", metric: num(k.nota_media, 2), short: "nota média (de 5)",
+      about: "O cliente avalia a experiência. A nota cai quase 2 pontos quando o pedido chega atrasado.",
+      facts: [["Nota média", num(k.nota_media, 2)], ["Notas 5 estrelas", num((n5 / nt) * 100, 1) + "%"], ["No prazo", num(np.nota_media, 2)], ["Com atraso", num(ca.nota_media, 2)]] },
   ];
-  const ol = $("steps");
-  ol.innerHTML = S.map((s, i) => `<li data-i="${i}"><span class="n">${i + 1}</span><div><b>${s.name}</b><small>${s.detail.replace("<br>", ". ")}</small></div></li>`).join("");
-  const mark = (i) => ol.querySelectorAll("li").forEach((li, j) => li.classList.toggle("on", i === j));
-  chain3d = window.OI_chain.mount($("supply3d"), $("tipSup"), S, mark);
-  ol.onclick = (e) => { const li = e.target.closest("li"); if (li) { chain3d.select(+li.dataset.i); } };
-  $("autoSup").onclick = () => { const on = chain3d.toggleAuto(); $("autoSup").textContent = on ? "Parar giro" : "Girar cena"; };
-  insight("i-sup", [`De cada ${brl(pago)} pagos, cerca de ${num((frete / pago) * 100, 1)}% vão para o frete.`, `O trecho final (distribuição até o cliente) leva em média ${num(k.prazo_medio, 1)} dias e ${num(k.pct_atraso, 2)}% dos pedidos atrasam.`, "O dataset não traz custo de produção nem de estoque: a cadeia mostra só o que existe nos dados (vendedor ao cliente)."]);
+  const info = $("stageInfo");
+  const intro = () => { info.innerHTML = `<div class="kicker">Mapa da cadeia</div><h3>Do vendedor ao cliente</h3><p class="hint">Clique em uma etapa do mapa para ver os números dela.<br><br>As <b>pilhas de moedas</b> mostram quanto dinheiro passa por cada ponto: receita de itens, total pago e frete.<br><br>Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>`; };
+  const detail = (i) => { const s = S[i]; info.innerHTML = `<div class="kicker">${s.kicker}</div><h3>${s.name}</h3><div class="big mono">${s.metric}</div><div class="hint">${s.short}</div><p class="about">${s.about}</p><dl>${s.facts.map(([a, b]) => `<div><dt>${a}</dt><dd class="mono">${b}</dd></div>`).join("")}</dl>${s.share ? `<p class="hint" style="margin-top:16px">Fatia do total pago: <b>${num(s.share * 100, 1)}%</b></p><div class="bar"><i style="width:${s.share * 100}%"></i></div>` : ""}`; };
+  intro();
+  window.chain3d = chain3d = window.OI_chain.mount($("supply3d"), $("tipSup"), S, (i) => (i == null ? intro() : detail(i)));
+  $("supReset").onclick = () => chain3d.reset();
 }
 
 async function showForecast(force) {
@@ -127,13 +134,17 @@ function initForecast() {
   showForecast();
 }
 
-const NAMES = { forecast: "Projeção", geral: "Visão geral", vendas: "Vendas", logistica: "Logística", satisfacao: "Satisfação", financeiro: "Financeiro", clientes: "Clientes", supply: "Cadeia 3D", d3: "Barras 3D" };
+const NAMES = { forecast: "Projeção", geral: "Visão geral", vendas: "Vendas", logistica: "Logística", satisfacao: "Satisfação", financeiro: "Financeiro", clientes: "Clientes" };
+let lastDash = "geral";
 function goTab(tab) {
+  if (tab === "dash") tab = lastDash;
+  const supply = tab === "supply";
   document.querySelectorAll(".action, .panel").forEach((x) => x.classList.remove("active"));
-  const b = document.querySelector(`.action[data-tab="${tab}"]`); if (b) b.classList.add("active");
-  $(tab).classList.add("active"); $("crumb").textContent = NAMES[tab];
-  document.querySelectorAll("#menu [data-go]").forEach((x) => x.classList.toggle("on", x.dataset.go === tab));
-  if (tab === "d3") show3d(); if (tab === "forecast") initForecast(); if (tab === "supply") showSupply();
+  $(tab).classList.add("active");
+  if (!supply) { lastDash = tab; const b = document.querySelector(`.action[data-tab="${tab}"]`); if (b) b.classList.add("active"); $("crumb").textContent = NAMES[tab]; }
+  document.body.classList.toggle("view-supply", supply);
+  document.querySelectorAll("#menu [data-go]").forEach((x) => x.classList.toggle("on", (x.dataset.go === "supply") === supply));
+  if (tab === "forecast") initForecast(); if (supply) showSupply();
   Object.values(charts).forEach((c) => c.resize());
 }
 $("tabs").addEventListener("click", (e) => { const b = e.target.closest(".action"); if (b) goTab(b.dataset.tab); });

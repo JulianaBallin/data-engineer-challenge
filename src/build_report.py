@@ -141,9 +141,9 @@ def build_sections():
 <p class="concl"><b>Conclusão.</b> Apenas {num(rec["Mais de uma compra"]["pct"],1)}% dos clientes compraram mais de uma vez. A base é dominada por compras únicas, o que indica baixa retenção. O meio de pagamento mais usado é {pay_top["tipo"]} ({num(100*pay_top["pagamentos"]/tot_pg,1)}% dos pagamentos). Campanhas de recompra têm grande espaço de crescimento.</p>"""))
 
     S.append(("s9", "9 Dashboard e autenticação", f"""
-<p>Os resultados do warehouse foram exportados para JSON e expostos em um dashboard interativo, com tema escuro e claro, abas por tópico, filtros, detalhamento por estado, contadores animados e um gráfico de barras 3D (Three.js) com rotação, zoom e dica ao passar o mouse.</p>
+<p>Os resultados do warehouse foram exportados para JSON e expostos em um dashboard interativo, com tema escuro e claro, seções por tópico (visão geral, vendas, logística, satisfação, financeiro, clientes e projeção), filtros, detalhamento por estado, contadores animados e uma página de Cadeia 3D (Three.js): um mapa com a estrada do pedido, em que cada etapa pode ser clicada para ver só os números dela.</p>
 {img(REL / "img" / "dashboard-geral.png", "Figura 9: visão geral do dashboard.", "92%")}
-{img(REL / "img" / "dashboard-d3.png", "Figura 10: receita mensal em barras 3D.", "92%")}
+{img(REL / "img" / "cadeia-3d.png", "Figura 10: mapa 3D da cadeia do pedido.", "92%")}
 {img(REL / "img" / "dashboard-login.png", "Figura 11: tela de login com cena 3D.", "70%")}
 <h3>9.1 Autenticação</h3>
 <p>O Vercel hospeda apenas arquivos estáticos e funções; por isso um login feito só no navegador não protegeria os dados. A solução usa funções serverless: a senha é verificada com scrypt contra um hash guardado em variável de ambiente, e a sessão é um cookie HttpOnly, Secure e SameSite=Strict assinado com HMAC-SHA256 e expiração de 8 horas. Os dados ficam em arquivo privado (<code>api/_data</code>), fora da pasta pública, e só são entregues pela rota <code>/api/data</code> com sessão válida.</p>
@@ -173,7 +173,7 @@ def build_sections():
  ("Acesso direto ao arquivo de dados", "404"),
  ("Suíte de API (scripts/test-api.js): autenticação, dados, projeção e 12 perguntas à Olli", "28 verificações aprovadas, localmente e em produção"),
  ("Olli com perguntas fora do escopo (clima, esportes, injeção de instruções)", "Responde que não tem o dado"),
- ("Dashboard em Chrome headless (9 abas, incluindo WebGL), temas claro e escuro, desktop e celular", "Sem erros de JavaScript e sem rolagem horizontal")])}
+ ("Dashboard em Chrome headless (7 seções do dashboard e a Cadeia 3D, incluindo WebGL), temas claro e escuro, desktop e celular", "Sem erros de JavaScript e sem rolagem horizontal")])}
 <p>Antes de obter os dados reais, o pipeline também foi testado com dados sintéticos no mesmo esquema, que foram descartados.</p>"""))
 
     S.append(("s11", "12 Como executar", """
