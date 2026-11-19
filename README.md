@@ -112,14 +112,16 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
   <img src="docs/relatorio/img/dashboard-d3.png" alt="Barras 3D de receita mensal" width="49%">
 </p>
 
-- 7 abas, tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
+- **Online:** https://data-engineer-challenge.vercel.app (login de teste: `bemol` / `bemol@2026`).
+- 9 abas, tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
 - Login com poliedro 3D animado e aba "Barras 3D" com a receita mensal (Three.js).
+- **Projeção:** regressão linear nos próximos 12 meses (intervalo de 95%, ajuste fraco) e cenários anuais (-5%, 0%, +15%) sobre o ritmo dos últimos 6 meses. São estimativas com margem de erro grande, e o dataset não tem custos, então só se projetam receita, pedidos, frete e total pago.
 - **Cadeia 3D (supply chain):** vendedor, marketplace, pagamento, distribuição, cliente e avaliação, com caminhão e pacotes em movimento e colunas proporcionais ao gasto (itens, total pago e frete estimado).
 - **Olli, assistente de dados (RAG):** chat flutuante que responde só com os dados do histórico. A API (`api/chat.js`, base em `api/_kb.js`) recupera trechos relevantes dos agregados e, se não houver o dado, avisa que não sabe. Com a variável `ANTHROPIC_API_KEY` o Claude redige a resposta usando apenas os trechos recuperados; sem ela, a Olli responde direto com os trechos (modo recuperação).
 - Senha verificada com `scrypt`; sessão em cookie `HttpOnly` assinado com HMAC.
 - Os dados ficam em arquivo privado e só saem por `/api/data` com sessão válida.
 - Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET` (opcional: `ANTHROPIC_API_KEY` para a Olli usar LLM).
-- Teste local: `node scripts/dev-server.js`.
+- Teste local: `node scripts/dev-server.js`. Testes de API: `BASE=... TEST_USER=... TEST_PASS=... node scripts/test-api.js` (28 verificações).
 
 ![Fluxo de autenticação](docs/diagrams/auth_flow.png)
 
@@ -140,7 +142,7 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
 ## Documentos
 
 - [Relatório técnico (PDF, 20 páginas)](docs/relatorio/relatorio-tecnico-olist.pdf)
-- Apresentação do desafio: [PDF](docs/apresentacao/apresentacao-olist.pdf) e [PPTX](docs/apresentacao/apresentacao-olist.pptx)
+- Apresentação do desafio (inclui passo a passo com as ferramentas): [PDF](docs/apresentacao/apresentacao-olist.pdf) e [PPTX](docs/apresentacao/apresentacao-olist.pptx)
 - [Regras de qualidade de dados](docs/data_quality.md)
 - Diagramas em `docs/diagrams/` (SVG e PNG)
 

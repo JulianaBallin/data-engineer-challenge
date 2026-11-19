@@ -176,9 +176,23 @@ text(s, LM, 5.35, 12, 1.5, ["O atraso derruba a nota em quase 2 pontos.", "Estad
 s = slide("Dashboard protegido por login")
 s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-geral.png"), Inches(LM), Inches(1.5), width=Inches(5.4))
 s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-d3.png"), Inches(6.5), Inches(1.5), width=Inches(5.4))
-text(s, LM, 5.6, 12, 1.4, ["7 abas, filtro por estado, busca, tema claro e escuro e gráficos clicáveis.",
+text(s, LM, 5.6, 12, 1.4, ["9 abas, filtro por estado, busca, tema claro e escuro e gráficos clicáveis.",
                             "Barras 3D da receita mensal (Three.js) e login com poliedro animado.",
                             "Senha com scrypt, cookie HttpOnly assinado com HMAC e dados em arquivo privado."], 15, gap=10)
+
+# 10a projecao
+s = slide("Projeção de receita: com cautela")
+rows(s, [("Regressão linear nos próximos 12 meses", "Estimativa de R$ 12,9 mi, com faixa de 95% de R$ 8,2 mi a R$ 17,6 mi. Ajuste fraco (R² 0,23)."),
+         ("Cenários para anos futuros, sem ML", "Ritmo de R$ 926 mil por mês com crescimento de -5%, 0% ou +15% ao ano. Em 2027: R$ 7,0 mi, R$ 11,1 mi ou R$ 39,1 mi."),
+         ("Só 20 meses de histórico", "A margem de erro é grande e cresce com o horizonte. O painel avisa isso em destaque."),
+         ("Sem custos nos dados", "Projetamos receita, pedidos, frete e total pago. Gastos e lucro da operação não são possíveis.")], lead_size=19, body_size=14)
+
+# 10c cadeia 3D e Olli
+s = slide("Cadeia 3D e assistente Olli")
+rows(s, [("Supply chain em 3D", "Vendedor, marketplace, pagamento, distribuição, cliente e avaliação, com caminhão, pacotes e colunas de gasto."),
+         ("Frete: cerca de 14% do total pago", "R$ 2,2 mi de R$ 16,0 mi pagos pelos clientes. Só existe o que os dados trazem: sem indústria nem estoque."),
+         ("Olli responde só com os dados históricos", "Busca trechos relevantes (RAG) e, se não houver o dado, avisa que não sabe."),
+         ("Projeções também na Olli", "Mesmo módulo da aba Projeção, sempre com a ressalva de incerteza.")], lead_size=19, body_size=14)
 
 # 10b deploy, login e IA
 s = slide("Deploy, login e uso de IA")

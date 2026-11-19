@@ -149,7 +149,18 @@ def build_sections():
 <p>O Vercel hospeda apenas arquivos estáticos e funções; por isso um login feito só no navegador não protegeria os dados. A solução usa funções serverless: a senha é verificada com scrypt contra um hash guardado em variável de ambiente, e a sessão é um cookie HttpOnly, Secure e SameSite=Strict assinado com HMAC-SHA256 e expiração de 8 horas. Os dados ficam em arquivo privado (<code>api/_data</code>), fora da pasta pública, e só são entregues pela rota <code>/api/data</code> com sessão válida.</p>
 {img(DOCS_DIR / "diagrams" / "auth_flow.svg", "Figura 12: fluxo de autenticação e acesso aos dados.")}"""))
 
-    S.append(("s10", "10 Testes e validação", f"""
+    S.append(("s9b", "10 Projeção, cadeia 3D e assistente Olli", """
+<h2>10.1 Projeção de receita</h2>
+<p>A aba <b>Projeção</b> combina duas abordagens, ambas com o aviso explícito de que o histórico tem apenas 20 meses (jan/2017 a ago/2018).</p>
+<ul><li><b>Regressão linear (próximos 12 meses):</b> mínimos quadrados sobre os últimos 12 meses, com intervalo de predição de 95%. O ajuste é fraco (R² de 0,23) e a faixa é larga: cerca de R$ 8,2 mi a R$ 17,6 mi no período, com estimativa central de R$ 12,9 mi.</li>
+<li><b>Cenários anuais (não é aprendizado de máquina):</b> ritmo médio dos últimos 6 meses (cerca de R$ 926 mil por mês) com crescimento anual de -5%, 0% ou +15%. Para 2027 resultam em R$ 7,0 mi, R$ 11,1 mi e R$ 39,1 mi de receita, respectivamente. Pedidos, frete e total pago saem de razões observadas nos dados.</li></ul>
+<p>O dataset não possui custos da empresa, portanto não se projetam gastos nem lucro: apenas receita, pedidos, frete e valor pago pelos clientes.</p>
+<h2>10.2 Cadeia produtiva em 3D</h2>
+<p>A aba <b>Cadeia 3D</b> representa o caminho do pedido (vendedor, marketplace, pagamento, distribuição, cliente e avaliação) com caminhão e pacotes em movimento e colunas proporcionais ao gasto (itens, total pago e frete estimado, cerca de 14% do pago). Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>
+<h2>10.3 Olli, assistente de dados (RAG)</h2>
+<p>A Olli é um chat que responde apenas com base nos dados históricos. A API recupera os trechos mais relevantes dos agregados (base de conhecimento em <code>api/_kb.js</code>) e, se não houver o dado, informa que não sabe. Com a variável <code>ANTHROPIC_API_KEY</code> o Claude redige a resposta usando somente os trechos recuperados; sem ela, a Olli devolve os próprios trechos. Perguntas sobre projeção usam o mesmo módulo da aba Projeção e sempre trazem a ressalva de incerteza.</p>"""))
+
+    S.append(("s10", "11 Testes e validação", f"""
 {table(["Verificação", "Resultado"], [
  ("Pipeline completo com os dados reais (extract, transform, load)", "Executado sem erros; warehouse reconstruído do zero"),
  ("Integridade referencial (6 relacionamentos)", "0 registros órfãos"),
@@ -160,10 +171,12 @@ def build_sections():
  ("Login correto", "200 e cookie HttpOnly assinado"),
  ("Cookie adulterado", "401"),
  ("Acesso direto ao arquivo de dados", "404"),
- ("Dashboard em Chrome headless (7 abas, incluindo WebGL)", "Sem erros de JavaScript")])}
+ ("Suíte de API (scripts/test-api.js): autenticação, dados, projeção e 12 perguntas à Olli", "28 verificações aprovadas, localmente e em produção"),
+ ("Olli com perguntas fora do escopo (clima, esportes, injeção de instruções)", "Responde que não tem o dado"),
+ ("Dashboard em Chrome headless (9 abas, incluindo WebGL), temas claro e escuro, desktop e celular", "Sem erros de JavaScript e sem rolagem horizontal")])}
 <p>Antes de obter os dados reais, o pipeline também foi testado com dados sintéticos no mesmo esquema, que foram descartados.</p>"""))
 
-    S.append(("s11", "11 Como executar", """
+    S.append(("s11", "12 Como executar", """
 <pre>python3 -m venv .venv &amp;&amp; source .venv/bin/activate
 pip install -r requirements.txt
 kaggle datasets download -d olistbr/brazilian-ecommerce -p data/raw --unzip
@@ -174,10 +187,10 @@ python src/build_diagrams.py    # diagramas
 python src/build_report.py      # este relatório</pre>
 <p>Para o dashboard local: <code>node scripts/dev-server.js</code> com as variáveis <code>AUTH_USER</code>, <code>AUTH_PASS_HASH</code> e <code>SESSION_SECRET</code> (gere o hash com <code>scripts/make-credentials.js</code>).</p>"""))
 
-    S.append(("s12", "12 Limitações", """
+    S.append(("s12", "13 Limitações", """
 <ul><li>O dataset é uma amostra pública de marketplace (2016 a 2018), não toda a operação de um varejista.</li><li>Receita não é lucro: não há custos de produtos.</li><li>Pedidos sem data de entrega não recebem prazo.</li><li>Os dados exportados ao dashboard são um instantâneo; não há atualização contínua.</li><li>A autenticação protege o acesso, mas há um único usuário e não há recuperação de senha.</li><li>A diferença de nota entre atrasados e no prazo é correlação, não prova de causa.</li></ul>"""))
 
-    S.append(("s13", "13 Conclusão", f"""
+    S.append(("s13", "14 Conclusão", f"""
 <p>O projeto transformou {num(k["pedidos"])} pedidos brutos em um warehouse confiável, com {len(dq)} regras de qualidade documentadas, uma tabela derivada de métricas, cinco análises respondidas e um dashboard protegido. Os achados principais são a concentração de receita em poucas categorias ({num(100*top3/k["receita"],1)}% nas três maiores), o impacto do atraso na satisfação (nota {num(n["Com atraso"],2)} contra {num(n["No prazo"],2)}) e a baixa recompra ({num(rec["Mais de uma compra"]["pct"],1)}%).</p>
 <p>Como próximos passos, sugerem-se testes automatizados de qualidade (por exemplo com dbt ou Great Expectations), orquestração agendada e um segundo usuário com perfis de acesso.</p>"""))
 
