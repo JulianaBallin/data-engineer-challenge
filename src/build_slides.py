@@ -19,6 +19,7 @@ prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 blank = prs.slide_layouts[6]
 n = [0]
+LM = 0.7 - 0.7 / 2.54  # margem esquerda reduzida em 0,7 cm
 
 
 def rect(s, x, y, w, h, color, shape=MSO_SHAPE.RECTANGLE):
@@ -27,12 +28,12 @@ def rect(s, x, y, w, h, color, shape=MSO_SHAPE.RECTANGLE):
     return r
 
 
-def text(s, x, y, w, h, t, size=18, bold=False, color=DARK, align=PP_ALIGN.LEFT):
+def text(s, x, y, w, h, t, size=18, bold=False, color=DARK, align=PP_ALIGN.LEFT, gap=6, spacing=1.0):
     tb = s.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
     tf = tb.text_frame; tf.word_wrap = True
     for i, line in enumerate(t if isinstance(t, list) else [t]):
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-        p.text = line; p.alignment = align; p.space_after = Pt(6)
+        p.text = line; p.alignment = align; p.space_after = Pt(gap); p.line_spacing = spacing
         for r in p.runs:
             r.font.size = Pt(size); r.font.bold = bold; r.font.color.rgb = color; r.font.name = "Calibri"
     return tb
@@ -43,16 +44,16 @@ def slide(title, dark=False):
     rect(s, 0, 0, 13.333, 7.5, DARK if dark else WHITE)
     if not dark:
         rect(s, 0, 0, 0.18, 7.5, ORANGE)
-        text(s, 0.7, 0.4, 11, 0.9, title, 32, True)
-        rect(s, 0.72, 1.25, 1.2, 0.06, ORANGE)
+        text(s, LM, 0.4, 11, 0.9, title, 32, True)
+        rect(s, LM + 0.12, 1.25, 1.2, 0.06, ORANGE)
         s.shapes.add_picture(str(LOGO), Inches(10.6), Inches(6.85), height=Inches(0.5))
-        text(s, 0.7, 7.0, 6, 0.3, "Olist Insights | Desafio Data Engineer I | Bemol Digital", 10, color=MUTED)
+        text(s, LM, 7.0, 6, 0.3, "Olist Insights | Desafio Data Engineer I | Bemol Digital", 10, color=MUTED)
         text(s, 9.2, 7.0, 1.2, 0.3, str(n[0]), 10, color=MUTED, align=PP_ALIGN.RIGHT)
     return s
 
 
-def bullets(s, items, x=0.7, y=1.6, w=11.5, size=20):
-    text(s, x, y, w, 5, ["•  " + i for i in items], size)
+def bullets(s, items, x=LM, y=1.75, w=11.8, size=20):
+    text(s, x, y, w, 5, ["•  " + i for i in items], size, gap=20, spacing=1.15)
 
 
 def card(s, x, y, w, h, big, small):
@@ -82,8 +83,8 @@ bullets(s, ["A Olist conecta pequenos lojistas a marketplaces e gera milhares de
 s = slide("A base de dados")
 for i, (b, t) in enumerate([("99.441", "pedidos"), ("112.650", "itens vendidos"), ("103.886", "pagamentos"),
                             ("99.224", "avaliações"), ("1.000.163", "linhas de geolocalização"), ("2016 a 2018", "período coberto")]):
-    card(s, 0.7 + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
-text(s, 0.7, 6.5, 10, 0.4, "Fonte: Brazilian E-Commerce Public Dataset by Olist (Kaggle), licença CC BY-NC-SA 4.0.", 12, color=MUTED)
+    card(s, LM + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
+text(s, LM, 6.5, 10, 0.4, "Fonte: Brazilian E-Commerce Public Dataset by Olist (Kaggle), licença CC BY-NC-SA 4.0.", 12, color=MUTED)
 
 # 4 qualidade
 s = slide("Problemas encontrados e tratamento")
@@ -92,7 +93,7 @@ bullets(s, ["189 pedidos com cronologia inválida: sinalizados e fora das métri
             "814 review_id repetidos: a Gold usa 1 avaliação por pedido (a mais recente).",
             "610 produtos sem categoria: rotulados 'desconhecida', sem inferir informação.",
             "Integridade referencial verificada em 6 relações, sem perdas.",
-            "21 regras documentadas com contagem e justificativa em docs/data_quality.md."], size=19)
+            "21 regras documentadas com contagem e justificativa em docs/data_quality.md."], size=18)
 
 # 5 arquitetura
 s = slide("Arquitetura da solução")
@@ -100,7 +101,7 @@ s.shapes.add_picture(str(ROOT / "docs/diagrams/architecture.png"), Inches(1.2), 
 
 # 6 medalhao
 s = slide("Camadas Bronze, Silver e Gold")
-s.shapes.add_picture(str(ROOT / "docs/diagrams/medallion.png"), Inches(0.7), Inches(1.6), width=Inches(7.2))
+s.shapes.add_picture(str(ROOT / "docs/diagrams/medallion.png"), Inches(LM), Inches(1.6), width=Inches(7.2))
 bullets(s, ["Bronze: cópia fiel dos CSVs, rastreável.", "Silver: limpa, tipada e padronizada.", "Gold: modelo estrela para análise.",
             "Pipeline idempotente: o warehouse é recriado do zero a cada execução."], x=8.2, y=1.7, w=4.7, size=17)
 
@@ -112,7 +113,7 @@ s.shapes.add_picture(str(ROOT / "docs/diagrams/star_schema.png"), Inches(1.5), I
 s = slide("Resultados: indicadores")
 for i, (b, t) in enumerate([("R$ 13,49 mi", "receita sem frete (receita não é lucro)"), ("96.096", "clientes únicos"), ("R$ 137,42", "ticket médio"),
                             ("6,78 %", "pedidos entregues com atraso"), ("2,27 x 4,29", "nota média com atraso x no prazo"), ("3,04 %", "clientes que compraram mais de uma vez")]):
-    card(s, 0.7 + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
+    card(s, LM + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
 
 s = slide("Receita por categoria e atraso por estado")
 s.shapes.add_picture(str(ROOT / "reports/charts/01_top10_categorias_receita.png"), Inches(0.5), Inches(1.6), width=Inches(6.2))
@@ -122,15 +123,15 @@ s = slide("Atraso, frete e recompra")
 s.shapes.add_picture(str(ROOT / "reports/charts/03_nota_media_atraso.png"), Inches(0.5), Inches(1.6), width=Inches(3.9))
 s.shapes.add_picture(str(ROOT / "reports/charts/04_frete_medio_uf.png"), Inches(4.6), Inches(1.6), width=Inches(3.9))
 s.shapes.add_picture(str(ROOT / "reports/charts/05_clientes_recorrentes.png"), Inches(8.8), Inches(1.6), width=Inches(3.9))
-text(s, 0.7, 5.4, 12, 1.3, ["O atraso derruba a nota em quase 2 pontos.", "Estados do Norte e Nordeste têm frete mais alto e mais atrasos.", "Só 3 % dos clientes recompram."], 15)
+text(s, LM, 5.35, 12, 1.5, ["O atraso derruba a nota em quase 2 pontos.", "Estados do Norte e Nordeste têm frete mais alto e mais atrasos.", "Só 3 % dos clientes recompram."], 15, gap=10)
 
 # 10 dashboard
 s = slide("Dashboard protegido por login")
-s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-geral.png"), Inches(0.7), Inches(1.5), width=Inches(5.4))
+s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-geral.png"), Inches(LM), Inches(1.5), width=Inches(5.4))
 s.shapes.add_picture(str(ROOT / "docs/relatorio/img/dashboard-d3.png"), Inches(6.5), Inches(1.5), width=Inches(5.4))
-text(s, 0.7, 5.65, 12, 1.2, ["7 abas, filtro por estado, busca, tema claro e escuro e gráficos clicáveis.",
+text(s, LM, 5.6, 12, 1.4, ["7 abas, filtro por estado, busca, tema claro e escuro e gráficos clicáveis.",
                             "Barras 3D da receita mensal (Three.js) e login com poliedro animado.",
-                            "Senha com scrypt, cookie HttpOnly assinado com HMAC e dados em arquivo privado."], 15)
+                            "Senha com scrypt, cookie HttpOnly assinado com HMAC e dados em arquivo privado."], 15, gap=10)
 
 # 11 conclusoes
 s = slide("Conclusões e próximos passos")
