@@ -228,7 +228,7 @@ PB = {"s1", "s4", "s6", "s7", "s8", "s9", "sref"}
 
 def logo_uri():
     import base64
-    return "data:image/png;base64," + base64.b64encode((ROOT / "assets/logo/bemol-logo.png").read_bytes()).decode()
+    return "data:image/png;base64," + base64.b64encode((ROOT / "assets/logo/bemol-digital-logo.png").read_bytes()).decode()
 
 
 def render(pages):

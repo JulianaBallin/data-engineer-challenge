@@ -9,7 +9,7 @@ from pptx.enum.text import PP_ALIGN
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/apresentacao"
-LOGO = ROOT / "assets/logo/bemol-logo.png"
+LOGO = ROOT / "assets/logo/bemol-digital-logo.png"
 SYM = ROOT / "assets/logo/olist-insights-simbolo.png"
 DARK, ORANGE, LIGHT, MUTED, WHITE = (RGBColor(0x14, 0x16, 0x18), RGBColor(0xF6, 0x85, 0x1B),
     RGBColor(0xF2, 0xF4, 0xF6), RGBColor(0x6A, 0x73, 0x7D), RGBColor(255, 255, 255))

@@ -144,6 +144,6 @@ são de responsabilidade da autora e foram revisados por ela.
 ---
 
 <p align="center">
-  <img src="assets/logo/bemol-logo.svg" alt="Bemol Digital" height="56"><br>
+  <img src="assets/logo/bemol-digital-logo.svg" alt="Bemol Digital" height="56"><br>
   Desafio técnico desenvolvido por <b>Juliana Ballin Lima</b> para a vaga de Data Engineer I na Bemol Digital.
 </p>
