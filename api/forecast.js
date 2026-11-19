@@ -1,5 +1,5 @@
 const { readSession } = require("./_auth");
-const { project, series, baseline, SCENARIOS } = require("./_forecast");
+const { project, series, baseline, regression, SCENARIOS } = require("./_forecast");
 
 module.exports = (req, res) => {
   if (!readSession(req)) return res.status(401).json({ error: "Não autenticado" });
@@ -10,7 +10,7 @@ module.exports = (req, res) => {
   const strip = (p) => ({ year: p.year, receita: p.receita, pedidos: p.pedidos, frete: p.frete, pago: p.pago });
   const b = baseline();
   res.status(200).json({
-    year, growth: g,
+    year, growth: g, ml: regression(),
     target: strip(project(year, g)),
     scenarios: Object.fromEntries(Object.entries(SCENARIOS).map(([k, v]) => [k, { growth: v, series: series(2017, year, v).map(strip) }])),
     selected: series(2017, year, g).map(strip),

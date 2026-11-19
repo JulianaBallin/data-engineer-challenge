@@ -154,3 +154,12 @@ body { background-color: var(--bg); background-image: radial-gradient(900px 420p
 .olli-form input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 10px 14px; color: var(--text); font: inherit; font-size: 14px; }
 .olli-form input:focus { outline: none; border-color: var(--primary); }
 .olli-form button { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 16px; }
+.insight.warn { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 9%, transparent); }
+input[type=range] { accent-color: var(--primary); width: 160px; }
+@media (max-width: 600px) {
+  .topbar { gap: 8px; padding: 10px 14px; }
+  .topbar .brand b { white-space: nowrap; font-size: 16px; }
+  .topbar .pill:not(#account) { display: none; }
+  #who { display: none; } #account { padding: 5px; }
+  .olli-fab { right: 14px; bottom: 14px; width: 60px; height: 60px; } .olli-panel { right: 12px; bottom: 86px; width: calc(100vw - 24px); }
+}

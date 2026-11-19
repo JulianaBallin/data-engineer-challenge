@@ -56,6 +56,14 @@ def bullets(s, items, x=LM, y=1.75, w=11.8, size=20):
     text(s, x, y, w, 5, ["•  " + i for i in items], size, gap=20, spacing=1.15)
 
 
+def card_grid(s, items, top=1.9, w=3.5, h=1.75, gap=0.4):
+    """Grade 3 colunas centralizada na largura do slide."""
+    x0 = (13.333 - (3 * w + 2 * gap)) / 2
+    for i, (b, t_) in enumerate(items):
+        card(s, x0 + (i % 3) * (w + gap), top + (i // 3) * (h + gap), w, h, b, t_)
+    return x0, top + 2 * h + gap
+
+
 def card(s, x, y, w, h, big, small):
     rect(s, x, y, w, h, LIGHT, MSO_SHAPE.ROUNDED_RECTANGLE)
     text(s, x + 0.2, y + 0.2, w - 0.4, 0.9, big, 30, True, ORANGE)
@@ -81,10 +89,9 @@ bullets(s, ["A Olist conecta pequenos lojistas a marketplaces e gera milhares de
 
 # 3 base de dados
 s = slide("A base de dados")
-for i, (b, t) in enumerate([("99.441", "pedidos"), ("112.650", "itens vendidos"), ("103.886", "pagamentos"),
-                            ("99.224", "avaliações"), ("1.000.163", "linhas de geolocalização"), ("2016 a 2018", "período coberto")]):
-    card(s, LM + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
-text(s, LM, 6.5, 10, 0.4, "Fonte: Brazilian E-Commerce Public Dataset by Olist (Kaggle), licença CC BY-NC-SA 4.0.", 12, color=MUTED)
+x0, bottom = card_grid(s, [("99.441", "pedidos"), ("112.650", "itens vendidos"), ("103.886", "pagamentos"),
+                           ("99.224", "avaliações"), ("1.000.163", "linhas de geolocalização"), ("2016 a 2018", "período coberto")])
+text(s, 0, bottom + 0.3, 13.333, 0.4, "Fonte: Brazilian E-Commerce Public Dataset by Olist (Kaggle), licença CC BY-NC-SA 4.0.", 12, color=MUTED, align=PP_ALIGN.CENTER)
 
 # 4 qualidade
 s = slide("Problemas encontrados e tratamento")
@@ -111,9 +118,8 @@ s.shapes.add_picture(str(ROOT / "docs/diagrams/star_schema.png"), Inches(1.5), I
 
 # 8-9 analises
 s = slide("Resultados: indicadores")
-for i, (b, t) in enumerate([("R$ 13,49 mi", "receita sem frete (receita não é lucro)"), ("96.096", "clientes únicos"), ("R$ 137,42", "ticket médio"),
-                            ("6,78 %", "pedidos entregues com atraso"), ("2,27 x 4,29", "nota média com atraso x no prazo"), ("3,04 %", "clientes que compraram mais de uma vez")]):
-    card(s, LM + (i % 3) * 4.1, 1.7 + (i // 3) * 2.4, 3.8, 2.1, b, t)
+card_grid(s, [("R$ 13,49 mi", "receita sem frete (receita não é lucro)"), ("96.096", "clientes únicos"), ("R$ 137,42", "ticket médio"),
+              ("6,78 %", "pedidos entregues com atraso"), ("2,27 x 4,29", "nota média com atraso x no prazo"), ("3,04 %", "clientes que compraram mais de uma vez")])
 
 s = slide("Receita por categoria e atraso por estado")
 s.shapes.add_picture(str(ROOT / "reports/charts/01_top10_categorias_receita.png"), Inches(0.5), Inches(1.6), width=Inches(6.2))

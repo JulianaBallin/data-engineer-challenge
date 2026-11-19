@@ -96,13 +96,44 @@ function showSupply() {
   insight("i-sup", [`De cada ${brl(pago)} pagos, cerca de ${num((frete / pago) * 100, 1)}% vão para o frete.`, `O trecho final (distribuição até o cliente) leva em média ${num(k.prazo_medio, 1)} dias e ${num(k.pct_atraso, 2)}% dos pedidos atrasam.`, "O dataset não traz custo de produção nem de estoque: a cadeia mostra só o que existe nos dados (vendedor ao cliente)."]);
 }
 
-const NAMES = { geral: "Visão geral", vendas: "Vendas", logistica: "Logística", satisfacao: "Satisfação", financeiro: "Financeiro", clientes: "Clientes", supply: "Cadeia 3D", d3: "Barras 3D" };
+async function showForecast(force) {
+  const O = css("--primary"), BLUE = "#4b7bec", year = $("fy").value || 2027, g = $("fg").value;
+  const r = await fetch(`/api/forecast?year=${year}&growth=${g}`); if (!r.ok) return (location.href = "/");
+  const F = await r.json(), ml = F.ml, hist = D.receita_mensal;
+  const labels = [...hist.map((x) => x.mes), ...ml.points.map((p) => p.mes)], pad = (n) => Array(n).fill(null);
+  const fitStart = hist.length - ml.window, line = (v) => [...pad(hist.length), ...v];
+  chart("c-ml", { type: "line", data: { labels, datasets: [
+    { label: "Histórico", data: [...hist.map((x) => x.receita), ...pad(12)], borderColor: O, backgroundColor: O + "22", tension: .3, pointRadius: 3 },
+    { label: "Limite inferior (95%)", data: line(ml.points.map((p) => p.lo)), borderColor: "transparent", pointRadius: 0, fill: false },
+    { label: "Intervalo de 95%", data: line(ml.points.map((p) => p.hi)), borderColor: "transparent", backgroundColor: BLUE + "30", pointRadius: 0, fill: "-1" },
+    { label: "Projeção (regressão)", data: [...pad(hist.length - 1), hist.at(-1).receita, ...ml.points.map((p) => p.yhat)], borderColor: BLUE, borderDash: [6, 5], tension: 0, pointRadius: 2 } ] },
+    options: { plugins: { legend: { display: true, labels: { filter: (i) => i.text !== "Limite inferior (95%)" } }, tooltip: { callbacks: { label: (c) => c.parsed.y == null ? "" : `${c.dataset.label}: ${brl(c.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => "R$ " + v / 1000 + " mil" } } } } });
+  $("ml-stats").innerHTML = [["Tendência", `${ml.slope >= 0 ? "+" : ""}${brl(ml.slope)} por mês`], ["Ajuste (R²)", num(ml.r2, 2) + " (baixo: o modelo explica pouco)"], ["Total em 12 meses", brl(ml.total12)], ["Faixa de 95%", `${brl(ml.lo12)} a ${brl(ml.hi12)}`]].map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("");
+
+  const T = F.target;
+  $("f-cards").innerHTML = [[`Receita em ${T.year}`, brl(T.receita)], ["Pedidos estimados", num(T.pedidos)], ["Frete estimado", brl(T.frete)], ["Total pago pelos clientes", brl(T.pago)]].map(([a, b]) => `<div class="card kpi"><div class="k">${a}</div><div class="v mono" style="font-size:20px">${b}</div></div>`).join("");
+  const yrs = F.selected.map((x) => String(x.year) + (x.year === 2017 ? " (real)" : x.year === 2018 ? " (real + estim.)" : ""));
+  chart("c-scen", { type: "bar", data: { labels: yrs, datasets: [
+    { label: `Seu cenário (${g}% ao ano)`, data: F.selected.map((x) => x.receita), backgroundColor: F.selected.map((x) => (x.year <= 2018 ? "#8b929a" : O)), borderRadius: 6 },
+    { type: "line", label: "Conservador (-5%)", data: F.scenarios.conservador.series.map((x) => x.receita), borderColor: "#d73847", borderDash: [5, 4], pointRadius: 2 },
+    { type: "line", label: "Otimista (+15%)", data: F.scenarios.otimista.series.map((x) => x.receita), borderColor: "#1c8c4b", borderDash: [5, 4], pointRadius: 2 } ] },
+    options: { plugins: { legend: { display: true }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${brl(c.parsed.y)}` } } }, scales: { y: { ticks: { callback: (v) => "R$ " + v / 1e6 + " mi" } } } } });
+}
+let forecastReady = false;
+function initForecast() {
+  if (forecastReady) return; forecastReady = true;
+  $("fy").innerHTML = Array.from({ length: 12 }, (_, i) => `<option value="${2019 + i}"${2019 + i === 2027 ? " selected" : ""}>${2019 + i}</option>`).join("");
+  $("fy").onchange = () => showForecast(); $("fg").oninput = () => { $("fgv").textContent = $("fg").value + "%"; clearTimeout(initForecast.t); initForecast.t = setTimeout(showForecast, 150); };
+  showForecast();
+}
+
+const NAMES = { forecast: "Projeção", geral: "Visão geral", vendas: "Vendas", logistica: "Logística", satisfacao: "Satisfação", financeiro: "Financeiro", clientes: "Clientes", supply: "Cadeia 3D", d3: "Barras 3D" };
 function goTab(tab) {
   document.querySelectorAll(".action, .panel").forEach((x) => x.classList.remove("active"));
   const b = document.querySelector(`.action[data-tab="${tab}"]`); if (b) b.classList.add("active");
   $(tab).classList.add("active"); $("crumb").textContent = NAMES[tab];
   document.querySelectorAll("#menu [data-go]").forEach((x) => x.classList.toggle("on", x.dataset.go === tab));
-  if (tab === "d3") show3d(); if (tab === "supply") showSupply();
+  if (tab === "d3") show3d(); if (tab === "forecast") initForecast(); if (tab === "supply") showSupply();
   Object.values(charts).forEach((c) => c.resize());
 }
 $("tabs").addEventListener("click", (e) => { const b = e.target.closest(".action"); if (b) goTab(b.dataset.tab); });

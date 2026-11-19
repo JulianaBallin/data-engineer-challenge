@@ -41,6 +41,7 @@
     <button class="action" data-tab="satisfacao"><span class="circle">★</span>Satisfação</button>
     <button class="action" data-tab="financeiro"><span class="circle">%</span>Financeiro</button>
     <button class="action" data-tab="clientes"><span class="circle">☺</span>Clientes</button>
+    <button class="action" data-tab="forecast"><span class="circle">↗</span>Projeção</button>
     <button class="action" data-tab="supply"><span class="circle">🚚</span>Cadeia 3D</button>
     <button class="action" data-tab="d3"><span class="circle">⬢</span>Barras 3D</button>
   </nav>
@@ -93,6 +94,21 @@
       <div class="card"><h3>Meios de pagamento</h3><p class="q">Quantidade de pagamentos por tipo.</p>
         <div class="chart-box"><canvas id="c-pag"></canvas></div></div>
     </div>
+  </section>
+
+  <section class="panel" id="forecast">
+    <div class="insight warn"><b>Leia antes: é uma estimativa, não uma garantia</b>
+      <ul><li>O histórico tem só 20 meses (jan/2017 a ago/2018), pouco para qualquer modelo. A margem de erro é grande.</li>
+      <li>O dataset não tem custos da empresa: projetamos receita, pedidos, frete e total pago pelos clientes.</li></ul></div>
+    <div class="card" style="margin-top:16px"><h3>Próximos 12 meses: regressão linear</h3>
+      <p class="q">Modelo estatístico (mínimos quadrados) sobre os últimos 12 meses. A faixa sombreada é o intervalo de predição de 95%.</p>
+      <div class="chart-box tall"><canvas id="c-ml"></canvas></div>
+      <div class="stat-row" id="ml-stats"></div></div>
+    <div class="card" style="margin-top:16px"><h3>Cenários para anos futuros</h3>
+      <p class="q">Hipóteses de crescimento anual sobre o ritmo médio dos últimos 6 meses. Não é aprendizado de máquina: é uma conta com premissas explícitas.</p>
+      <div class="controls">Ano: <select id="fy"></select> Crescimento ao ano: <input type="range" id="fg" min="-20" max="40" step="1" value="0"> <b id="fgv" class="mono">0%</b></div>
+      <div class="grid kpis" id="f-cards"></div>
+      <div class="chart-box tall"><canvas id="c-scen"></canvas></div></div>
   </section>
 
   <section class="panel" id="supply">
