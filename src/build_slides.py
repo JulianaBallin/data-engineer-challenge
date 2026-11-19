@@ -44,9 +44,9 @@ def slide(title, dark=False):
         rect(s, 0, 0, 0.18, 7.5, ORANGE)
         text(s, 0.7, 0.4, 11, 0.9, title, 32, True)
         rect(s, 0.72, 1.25, 1.2, 0.06, ORANGE)
-        s.shapes.add_picture(str(LOGO), Inches(11.55), Inches(6.7), height=Inches(0.55))
+        s.shapes.add_picture(str(LOGO), Inches(10.6), Inches(6.85), height=Inches(0.5))
         text(s, 0.7, 7.0, 6, 0.3, "Olist Insights | Desafio Data Engineer I | Bemol Digital", 10, color=MUTED)
-        text(s, 10.2, 7.0, 1.2, 0.3, str(n[0]), 10, color=MUTED, align=PP_ALIGN.RIGHT)
+        text(s, 9.2, 7.0, 1.2, 0.3, str(n[0]), 10, color=MUTED, align=PP_ALIGN.RIGHT)
     return s
 
 
@@ -68,8 +68,8 @@ text(s, 3.0, 1.3, 9.5, 1, "Olist Insights", 54, True, WHITE)
 text(s, 3.0, 2.4, 9.5, 1.2, "Pipeline ETL, Data Warehouse em DuckDB e dashboard de e-commerce", 24, color=RGBColor(0xA7, 0xAD, 0xB4))
 text(s, 3.0, 3.8, 9.5, 0.6, "DESAFIO TÉCNICO | DATA ENGINEER I", 16, True, ORANGE)
 text(s, 0.9, 5.6, 7, 1, ["Juliana Ballin Lima", "Novembro de 2026"], 16, color=WHITE)
-rect(s, 10.0, 5.55, 2.7, 1.5, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
-s.shapes.add_picture(str(LOGO), Inches(10.2), Inches(5.65), height=Inches(1.3))
+rect(s, 9.0, 5.7, 3.8, 1.25, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
+s.shapes.add_picture(str(LOGO), Inches(9.2), Inches(5.95), width=Inches(3.4))
 
 # 2 problema
 s = slide("O problema")
@@ -141,8 +141,8 @@ bullets(s, ["Base confiável: regras auditáveis, camadas separadas e nenhum dad
 
 # 12 encerramento
 s = slide("", dark=True)
-rect(s, 4.9, 1.4, 3.5, 1.9, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
-s.shapes.add_picture(str(LOGO), Inches(5.1), Inches(1.5), height=Inches(1.7))
+rect(s, 3.9, 1.5, 5.5, 1.7, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
+s.shapes.add_picture(str(LOGO), Inches(4.2), Inches(1.85), width=Inches(4.9))
 text(s, 0, 3.8, 13.333, 1, "Obrigada!", 48, True, WHITE, PP_ALIGN.CENTER)
 text(s, 0, 4.9, 13.333, 0.8, "Juliana Ballin Lima | github.com/JulianaBallin/data-engineer-challenge", 18, color=ORANGE, align=PP_ALIGN.CENTER)
 

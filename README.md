@@ -98,6 +98,13 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
 - Valores ausentes ficam nulos; a única exceção é a categoria de produto ausente, rotulada `desconhecida`.
 - Detalhes, contagens e justificativas de cada uma das 21 regras: [docs/data_quality.md](docs/data_quality.md).
 
+## Premissas e limitações
+
+- O dataset não tem custo de produto: a receita analisada é faturamento, não lucro.
+- É uma amostra de um marketplace (2016 a 2018), não toda a operação de um varejista.
+- Valores ausentes não são imputados; pedidos sem data de entrega não recebem prazo.
+- Só 3 % dos clientes recompram, então métricas de recorrência têm base pequena.
+
 ## Dashboard
 
 <p align="center">
@@ -139,11 +146,12 @@ A gold em estrela simplifica as consultas e evita duplicação de linhas em join
 
 A IA (Claude Code, da Anthropic) foi utilizada para fins de **documentação** e como **auxílio na criação do
 frontend e da interface de apresentação do dashboard**. O código do pipeline, as regras de negócio e os resultados
-são de responsabilidade da autora e foram revisados por ela.
+são de responsabilidade da autora e foram revisados por ela. O processo foi iterativo: a autora definiu as
+regras e as perguntas, a IA gerou rascunhos de documentação e da interface, e cada entrega foi conferida contra os dados.
 
 ---
 
 <p align="center">
-  <img src="assets/logo/bemol-digital-logo.svg" alt="Bemol Digital" height="56"><br>
+  <img src="assets/logo/bemol-digital-logo.png" alt="Bemol Digital" height="56"><br>
   Desafio técnico desenvolvido por <b>Juliana Ballin Lima</b> para a vaga de Data Engineer I na Bemol Digital.
 </p>
