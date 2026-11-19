@@ -49,4 +49,4 @@
 - Pedidos sem data efetiva de entrega não recebem prazo de entrega.
 - Receita = soma de `price` dos itens (sem frete) de pedidos não cancelados/indisponíveis. Receita **não** é lucro: o dataset não tem custos.
 - Registros com problemas de integridade referencial são **sinalizados** nos logs, mas mantidos quando o problema não invalida a própria linha.
-- O dataset é uma amostra pública de um marketplace (2016–2018), não toda a operação de um varejista.
+- O dataset é uma amostra pública de um marketplace (2016 a 2018), não toda a operação de um varejista.

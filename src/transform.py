@@ -66,7 +66,7 @@ class QualityLog:
             "Receita **não** é lucro: o dataset não tem custos.",
             "- Registros com problemas de integridade referencial são **sinalizados** nos logs, "
             "mas mantidos quando o problema não invalida a própria linha.",
-            "- O dataset é uma amostra pública de um marketplace (2016–2018), não toda a operação de um varejista.",
+            "- O dataset é uma amostra pública de um marketplace (2016 a 2018), não toda a operação de um varejista.",
         ]
         return "\n".join(out) + "\n"
 
@@ -172,7 +172,7 @@ def clean_reviews(df, log):
     df["review_score"] = pd.to_numeric(df["review_score"], errors="coerce").astype("Int64")
     bad = ~df["review_score"].between(1, 5)
     if bad.sum():
-        log.add("order_reviews", "Nota fora do intervalo 1–5", "Linha removida", bad.sum(),
+        log.add("order_reviews", "Nota fora do intervalo 1 a 5", "Linha removida", bad.sum(),
                 "Nota inválida distorce a média de satisfação")
     df = df[~bad]
     for c in ["review_comment_title", "review_comment_message"]:

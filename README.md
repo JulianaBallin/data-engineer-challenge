@@ -1,4 +1,4 @@
-# Desafio Técnico — Data Engineer I | Bemol Digital
+# Desafio Técnico : Data Engineer I | Bemol Digital
 
 Pipeline ETL e análise exploratória do [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce/data),
 com mini Data Warehouse em DuckDB.
@@ -38,7 +38,7 @@ Arquitetura em camadas no DuckDB:
 
 - **bronze**: cópia fiel dos CSVs (tudo `VARCHAR`), para rastreabilidade.
 - **silver**: dados limpos e tipados (datas, valores numéricos, duplicidades, categorias traduzidas).
-- **gold**: modelo estrela pronto para análise — `dim_customer`, `dim_seller`, `dim_product`, `dim_date`,
+- **gold**: modelo estrela pronto para análise : `dim_customer`, `dim_seller`, `dim_product`, `dim_date`,
   `fact_order_items`, `fact_payments` e `fact_orders` (**tabela derivada** com `delivery_days`, `delay_days`, `is_late`,
   `items_revenue`, `review_score`).
 
@@ -61,3 +61,11 @@ documentação, e testado em dados sintéticos no mesmo esquema do Olist. O cód
 devem ser revisados e validados pela autora antes da entrega.
 
 Desenvolvido por: Juliana Ballin Lima.
+
+## Dashboard web e relatório
+
+- **Dashboard** (Vercel): `public/` (login e dashboard com Chart.js e Three.js) e `api/` (login, sessão e dados protegidos).
+  Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET`.
+  Teste local: `node scripts/dev-server.js`.
+- **Relatório técnico (PDF):** [docs/relatorio/relatorio-tecnico-olist.pdf](docs/relatorio/relatorio-tecnico-olist.pdf).
+- **Diagramas:** `docs/diagrams/` (arquitetura, camadas, modelo estrela e fluxo de autenticação).
