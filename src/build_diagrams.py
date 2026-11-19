@@ -25,14 +25,14 @@ class Svg:
         self.add(f'<text x="{x}" y="{y}" font-size="{size}" font-weight="{weight}" fill="{fill}" '
                  f'text-anchor="{anchor}">{escape(str(s))}</text>')
 
-    def box(self, x, y, w, h, title, lines=(), color=ORANGE, bg=ORANGE_BG, tsize=14):
+    def box(self, x, y, w, h, title, lines=(), color=ORANGE, bg=ORANGE_BG, tsize=14, lsize=12.5, lgap=19):
         self.add(f'<rect x="{x+2}" y="{y+3}" width="{w}" height="{h}" rx="10" fill="#000" opacity=".06"/>')
         self.add(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="10" fill="{bg}" stroke="{color}" stroke-width="1.6"/>')
         self.add(f'<rect x="{x}" y="{y}" width="{w}" height="30" rx="10" fill="{color}"/>'
                  f'<rect x="{x}" y="{y+20}" width="{w}" height="10" fill="{color}"/>')
         self.text(x + w / 2, y + 20, title, tsize, 700, "#fff", "middle")
         for i, ln in enumerate(lines):
-            self.text(x + 14, y + 52 + i * 19, ln, 12.5, 400, INK)
+            self.text(x + 14, y + 52 + i * lgap, ln, lsize, 400, INK)
 
     def arrow(self, x1, y1, x2, y2, label="", color=MUTED, dash=False, mid=None, label_at=None, route=None):
         """Seta ortogonal: reta quando alinhada, senão com quebras de 90 graus (H-V-H ou V-H-V)."""
@@ -86,13 +86,13 @@ def medallion():
     cols = [
         (30, "BRONZE", BRONZE, "#f7ece4", ["Cópia fiel dos 9 CSVs", "Todas as colunas em VARCHAR", "Sem filtros nem correções", "Objetivo: rastreabilidade", "", "Ex.: bronze.orders (99.441)", "bronze.geolocation (1.000.163)"]),
         (460, "SILVER", SILVER, "#eef0f2", ["Dados limpos e tipados", "Datas em TIMESTAMP, valores em DOUBLE", "Duplicidades e nulos tratados", "Categorias traduzidas (EN)", "Flag has_date_inconsistency", "", "Ex.: silver.geolocation (19.010)"]),
-        (890, "GOLD", GOLD, "#fbf3dc", ["Modelo estrela para análise", "dim_customer, dim_seller, dim_product, dim_date", "fact_order_items, fact_payments", "fact_orders: tabela derivada", "delivery_days, delay_days, is_late", "", "Consumida por SQL, notebook e API"]),
+        (890, "GOLD", GOLD, "#fbf3dc", ["Modelo estrela para análise", "dim_customer, dim_seller,", "dim_product, dim_date,", "fact_order_items, fact_payments", "fact_orders: tabela derivada", "delivery_days, delay_days, is_late", "Consumida por SQL e API"]),
     ]
     for x, name, c, bg, lines in cols:
-        s.box(x, 110, 360, 270, name, lines, c, bg, 16)
+        s.box(x, 110, 360, 270, name, lines, c, bg, 18, 15.5, 25)
     s.arrow(390, 245, 460, 245, "limpeza"); s.arrow(820, 245, 890, 245, "modelagem")
     s.box(30, 410, 1220, 80, "Por que camadas?", ["Cada transformação é auditável (bronze x silver x gold), a limpeza é reexecutável e a gold simplifica as consultas,",
-                                                 "evitando duplicação de linhas em joins (1 avaliação por pedido, 1 coordenada por CEP)."], ORANGE, ORANGE_BG)
+                                                 "evitando duplicação de linhas em joins (1 avaliação por pedido, 1 coordenada por CEP)."], ORANGE, ORANGE_BG, 16, 15, 24)
     s.save("medallion.svg")
 
 
