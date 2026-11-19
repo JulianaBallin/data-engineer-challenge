@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141618"/><stop offset="1" stop-color="#2a2e32"/></linearGradient></defs>
+  <rect width="1200" height="300" rx="18" fill="url(#g)"/>
+  <g transform="translate(90 70) scale(2.6)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M32 6L56 18L32 30L8 18Z" fill="#f6851b" stroke="#f6851b" stroke-width="2.4"/>
+    <path d="M8 29L32 41L56 29" stroke="#c9a27a" stroke-width="3"/>
+    <path d="M8 40L32 52L56 40" stroke="#8b949e" stroke-width="3"/>
+    <circle cx="32" cy="18" r="3" fill="#141618"/>
+  </g>
+  <text x="300" y="140" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="64" font-weight="700" fill="#ffffff">Olist <tspan fill="#f6851b">Insights</tspan></text>
+  <text x="302" y="190" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="26" fill="#a7adb4">Pipeline ETL, Data Warehouse em DuckDB e dashboard</text>
+  <text x="302" y="228" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" fill="#f6851b" letter-spacing="2">DESAFIO TÉCNICO · DATA ENGINEER I · BEMOL DIGITAL</text>
+</svg>

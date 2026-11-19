@@ -1,7 +1,63 @@
-# Desafio Técnico : Data Engineer I | Bemol Digital
+<p align="center">
+  <img src="assets/readme/banner.svg" alt="Olist Insights: pipeline ETL, Data Warehouse e dashboard" width="100%">
+</p>
 
-Pipeline ETL e análise exploratória do [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce/data),
-com mini Data Warehouse em DuckDB.
+<p align="center">
+  <img src="assets/logo/olist-insights-simbolo.svg" alt="" width="56"><br>
+  <b>Do CSV bruto à decisão, em camadas auditáveis.</b><br>
+  Pipeline ETL idempotente, mini Data Warehouse em <b>DuckDB</b> com modelo estrela<br>
+  e um dashboard protegido por login sobre o dataset público de e-commerce da <b>Olist</b>.
+</p>
+
+<p align="center">
+  <img alt="Desafio" src="https://img.shields.io/badge/desafio-Bemol%20Digital-f6851b">
+  <img alt="Vaga" src="https://img.shields.io/badge/vaga-Data%20Engineer%20I-f6851b">
+  <img alt="Dados" src="https://img.shields.io/badge/dados-Olist%20%C2%B7%20100%20mil%20pedidos-24272a">
+  <img alt="ETL" src="https://img.shields.io/badge/ETL-Python%20%C2%B7%20pandas%20%C2%B7%20Parquet-24272a">
+  <img alt="DW" src="https://img.shields.io/badge/DW-DuckDB%20%C2%B7%20medalh%C3%A3o-24272a">
+  <img alt="Web" src="https://img.shields.io/badge/web-Chart.js%20%C2%B7%20Three.js%20%C2%B7%20Vercel-24272a">
+</p>
+
+---
+
+## O problema
+
+A Olist conecta pequenos lojistas a grandes marketplaces. O desafio pede transformar nove tabelas CSV brutas
+(pedidos, itens, pagamentos, avaliações, clientes, vendedores, produtos, geolocalização e tradução de categorias)
+em uma base confiável e responder perguntas de negócio:
+
+1. Quais as 10 categorias que mais geram receita?
+2. Qual o percentual de pedidos entregues com atraso, por estado?
+3. Como a nota média de avaliação muda quando o pedido atrasa?
+4. Qual o frete médio por estado?
+5. Quantos clientes compram mais de uma vez?
+
+## A solução em uma imagem
+
+![Arquitetura](docs/diagrams/architecture.png)
+
+| Etapa | O que acontece | Onde |
+|---|---|---|
+| **Extract** | Lê os 9 CSVs sem alterá-los | `src/extract.py` |
+| **Transform** | Limpa, tipa, padroniza e registra cada regra de qualidade | `src/transform.py` |
+| **Load** | Reconstrói o warehouse do zero (Bronze, Silver, Gold) | `src/load.py`, `sql/` |
+| **Analyze** | 5 consultas SQL, gráficos e notebook com conclusões | `sql/analytics.sql`, `notebooks/` |
+| **Serve** | Dashboard com login, API protegida e cenas 3D | `public/`, `api/` |
+
+## Principais resultados
+
+| Indicador | Valor |
+|---|---:|
+| Pedidos | 99.441 |
+| Receita (sem frete) | R$ 13,49 mi |
+| Clientes únicos | 96.096 |
+| Ticket médio | R$ 137,42 |
+| Pedidos entregues com atraso | 6,78 % |
+| Nota média | 4,09 |
+| Nota média com atraso x no prazo | 2,27 x 4,29 |
+| Clientes que compraram mais de uma vez | 3,04 % |
+
+O atraso derruba a nota em quase **2 pontos**, e a recompra é baixa: duas alavancas claras para o negócio.
 
 ## Como executar
 
@@ -9,14 +65,54 @@ com mini Data Warehouse em DuckDB.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 1. Baixe o dataset no Kaggle e extraia os 9 CSVs em data/raw/ (os arquivos originais nunca são alterados)
-# 2. Rode o pipeline (Extract -> Transform -> Load)
+# 1. Baixe o dataset no Kaggle e extraia os 9 CSVs em data/raw/ (os originais nunca são alterados)
+# 2. Rode o pipeline (Extract, Transform, Load)
 python src/pipeline.py
-# 3. Gere e execute o notebook (consultas SQL + gráficos + conclusões)
+# 3. Gere e execute o notebook (consultas SQL, gráficos e conclusões)
 python src/build_notebook.py
 ```
 
 O pipeline é idempotente: o warehouse é reconstruído do zero a cada execução.
+
+## Modelagem (opção B, com modelo dimensional na Gold)
+
+![Camadas](docs/diagrams/medallion.png)
+
+- **bronze**: cópia fiel dos CSVs (tudo `VARCHAR`), para rastreabilidade.
+- **silver**: dados limpos e tipados (datas, valores numéricos, duplicidades, categorias traduzidas).
+- **gold**: modelo estrela pronto para análise: `dim_customer`, `dim_seller`, `dim_product`, `dim_date`,
+  `fact_order_items`, `fact_payments` e `fact_orders` (tabela derivada com `delivery_days`, `delay_days`, `is_late`,
+  `items_revenue`, `review_score`).
+
+**Justificativa:** as camadas separam preservação, limpeza e consumo, e tornam cada transformação auditável.
+A gold em estrela simplifica as consultas e evita duplicação de linhas em joins
+(1 avaliação por pedido, 1 coordenada por CEP).
+
+![Modelo estrela](docs/diagrams/star_schema.png)
+
+## Decisões principais
+
+- Receita = soma de `price` (sem frete) de pedidos não cancelados nem indisponíveis. Receita não é lucro.
+- Prazo e atraso só são calculados para pedidos `delivered` com data de entrega e cronologia válida; nenhuma data é inventada.
+- Cliente = `customer_unique_id` (o `customer_id` muda a cada pedido).
+- Valores ausentes ficam nulos; a única exceção é a categoria de produto ausente, rotulada `desconhecida`.
+- Detalhes, contagens e justificativas de cada uma das 21 regras: [docs/data_quality.md](docs/data_quality.md).
+
+## Dashboard
+
+<p align="center">
+  <img src="docs/relatorio/img/dashboard-geral.png" alt="Visão geral do dashboard" width="49%">
+  <img src="docs/relatorio/img/dashboard-d3.png" alt="Barras 3D de receita mensal" width="49%">
+</p>
+
+- 7 abas, tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
+- Login com poliedro 3D animado e aba "Barras 3D" com a receita mensal (Three.js).
+- Senha verificada com `scrypt`; sessão em cookie `HttpOnly` assinado com HMAC.
+- Os dados ficam em arquivo privado e só saem por `/api/data` com sessão válida.
+- Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET`.
+- Teste local: `node scripts/dev-server.js`.
+
+![Fluxo de autenticação](docs/diagrams/auth_flow.png)
 
 ## Estrutura
 
@@ -25,47 +121,29 @@ O pipeline é idempotente: o warehouse é reconstruído do zero a cada execuçã
 | `data/raw/` | CSVs originais (RAW), intocados e ignorados pelo Git |
 | `data/processed/` | Tabelas tratadas em Parquet (saída do Transform) |
 | `data/warehouse/olist.duckdb` | Data Warehouse |
-| `src/extract.py` `transform.py` `load.py` `pipeline.py` | Pipeline ETL |
-| `src/build_notebook.py` | Gera e executa `notebooks/exploratory_analysis.ipynb` |
-| `sql/schema.sql` `gold.sql` | DDL das camadas e carga da camada gold |
-| `sql/analytics.sql` | Consultas das 5 análises |
+| `src/` | Pipeline ETL, geração do notebook, diagramas, relatório e exportação para a web |
+| `sql/` | `schema.sql` e `gold.sql` (DDL e carga) e `analytics.sql` (5 análises) |
 | `reports/charts/` | Gráficos (PNG) |
-| `docs/data_quality.md` | Regras de qualidade (gerado a cada execução) |
+| `public/` e `api/` | Frontend e API do dashboard |
+| `docs/` | Regras de qualidade, diagramas, relatório técnico e apresentação |
+| `assets/` | Logo e banner |
 
-## Modelagem (Opção B + modelo dimensional na Gold)
+## Documentos
 
-Arquitetura em camadas no DuckDB:
-
-- **bronze**: cópia fiel dos CSVs (tudo `VARCHAR`), para rastreabilidade.
-- **silver**: dados limpos e tipados (datas, valores numéricos, duplicidades, categorias traduzidas).
-- **gold**: modelo estrela pronto para análise : `dim_customer`, `dim_seller`, `dim_product`, `dim_date`,
-  `fact_order_items`, `fact_payments` e `fact_orders` (**tabela derivada** com `delivery_days`, `delay_days`, `is_late`,
-  `items_revenue`, `review_score`).
-
-**Justificativa:** camadas separam preservação, limpeza e consumo, e tornam cada transformação auditável.
-A gold em estrela simplifica as consultas e evita erros de duplicação de linhas em joins
-(ex.: 1 avaliação por pedido, 1 coordenada por CEP).
-
-## Decisões principais
-
-- Receita = soma de `price` (sem frete) de pedidos não cancelados/indisponíveis. Receita não é lucro.
-- Prazo/atraso só são calculados para pedidos `delivered` com data de entrega e cronologia válida; nenhuma data é inventada.
-- Cliente = `customer_unique_id` (o `customer_id` muda a cada pedido).
-- Valores ausentes ficam nulos; a única exceção é a categoria de produto ausente, rotulada `desconhecida`.
-- Detalhes, contagens e justificativas de cada regra: [docs/data_quality.md](docs/data_quality.md).
+- [Relatório técnico (PDF, 20 páginas)](docs/relatorio/relatorio-tecnico-olist.pdf)
+- Apresentação do desafio: [PDF](docs/apresentacao/apresentacao-olist.pdf) e [PPTX](docs/apresentacao/apresentacao-olist.pptx)
+- [Regras de qualidade de dados](docs/data_quality.md)
+- Diagramas em `docs/diagrams/` (SVG e PNG)
 
 ## Uso de Inteligência Artificial
 
-Foi utilizado o **Claude Code (Anthropic)** como apoio na estruturação do projeto, escrita do código do pipeline, SQL e
-documentação, e testado em dados sintéticos no mesmo esquema do Olist. O código, as regras de negócio e os resultados
-devem ser revisados e validados pela autora antes da entrega.
+A IA (Claude Code, da Anthropic) foi utilizada para fins de **documentação** e como **auxílio na criação do
+frontend e da interface de apresentação do dashboard**. O código do pipeline, as regras de negócio e os resultados
+são de responsabilidade da autora e foram revisados por ela.
 
-Desenvolvido por: Juliana Ballin Lima.
+---
 
-## Dashboard web e relatório
-
-- **Dashboard** (Vercel): `public/` (login e dashboard com Chart.js e Three.js) e `api/` (login, sessão e dados protegidos).
-  Variáveis de ambiente: `AUTH_USER`, `AUTH_PASS_HASH` (gere com `node scripts/make-credentials.js "<senha>"`) e `SESSION_SECRET`.
-  Teste local: `node scripts/dev-server.js`.
-- **Relatório técnico (PDF):** [docs/relatorio/relatorio-tecnico-olist.pdf](docs/relatorio/relatorio-tecnico-olist.pdf).
-- **Diagramas:** `docs/diagrams/` (arquitetura, camadas, modelo estrela e fluxo de autenticação).
+<p align="center">
+  <img src="assets/logo/bemol-logo.svg" alt="Bemol Digital" height="56"><br>
+  Desafio técnico desenvolvido por <b>Juliana Ballin Lima</b> para a vaga de Data Engineer I na Bemol Digital.
+</p>

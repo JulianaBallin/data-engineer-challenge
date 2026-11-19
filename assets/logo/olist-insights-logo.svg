@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" fill="none">
+  <g transform="translate(4 4) scale(1)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 6L56 18L32 30L8 18Z" fill="#f6851b" stroke="#f6851b" stroke-width="2.4"/>
+    <path d="M8 29L32 41L56 29" stroke="#8a6a4a" stroke-width="3"/>
+    <path d="M8 40L32 52L56 40" stroke="#5a6470" stroke-width="3"/>
+    <circle cx="32" cy="18" r="3" fill="#141618"/>
+  </g>
+  <text x="80" y="36" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#24272a">Olist <tspan fill="#f6851b">Insights</tspan></text>
+  <text x="81" y="58" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13" fill="#6a737d" letter-spacing="1.5">ETL · DATA WAREHOUSE · DASHBOARD</text>
+</svg>

@@ -193,7 +193,7 @@ CSS = """
 @page { size: A4; margin: 22mm 18mm 20mm 18mm;
   @top-left { content: "Olist Data Engineering | Relatório técnico"; font: 8.5pt Helvetica, Arial, sans-serif; color: #7b8794; }
   @top-right { content: "Desafio Data Engineer I"; font: 8.5pt Helvetica, Arial, sans-serif; color: #7b8794; }
-  @bottom-left { content: "Bemol Digital"; font: 8.5pt Helvetica, Arial, sans-serif; color: #7b8794; }
+  @bottom-left { content: ""; background: url("@@LOGO@@") left center / contain no-repeat; width: 20mm; }
   @bottom-right { content: "Página " counter(page); font: 8.5pt Helvetica, Arial, sans-serif; color: #7b8794; } }
 @page :first { margin: 0; @top-left { content: none } @top-right { content: none } @bottom-left { content: none } @bottom-right { content: none } }
 * { box-sizing: border-box; }
@@ -226,14 +226,19 @@ figcaption { font-size: 8.5pt; color: #617080; margin-top: 4px; }
 PB = {"s1", "s4", "s6", "s7", "s8", "s9", "sref"}
 
 
+def logo_uri():
+    import base64
+    return "data:image/png;base64," + base64.b64encode((ROOT / "assets/logo/bemol-logo.png").read_bytes()).decode()
+
+
 def render(pages):
     S = build_sections()
     toc = ""
     for sid, title, html in S:
         toc += f'<a href="#{sid}"><span>{escape(title)}</span><span>{pages.get(sid, "")}</span></a>'
     body = "".join(f'<section id="{sid}" class="{"pb" if sid in PB else ""}"><h1>{escape(title)}</h1>{html}</section>' for sid, title, html in S)
-    return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório técnico: Olist Data Engineering</title><style>{CSS}</style></head><body>
-<div class="cover"><div class="band"><div class="kicker">RELATÓRIO TÉCNICO &nbsp;|&nbsp; DESAFIO DATA ENGINEER I</div>
+    return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório técnico: Olist Data Engineering</title><style>{CSS.replace("@@LOGO@@", logo_uri())}</style></head><body>
+<div class="cover"><div class="band"><div style="background:#fff;border-radius:3mm;padding:3mm 4mm;width:34mm;position:absolute;top:16mm;right:22mm"><img src="{logo_uri()}" style="width:100%;display:block" alt="Bemol"></div><div class="kicker">RELATÓRIO TÉCNICO &nbsp;|&nbsp; DESAFIO DATA ENGINEER I</div>
 <span class="h1b" style="display:block;font-size:40pt;font-weight:700;margin:12mm 0 4mm;border-bottom:4px solid #e2761b;padding-bottom:6mm;width:78%">Olist Data Engineering</span>
 <div class="sub">Pipeline ETL, mini Data Warehouse em DuckDB, análise exploratória e dashboard 3D com autenticação</div></div><div class="stripe"></div>
 <div class="meta"><div><b>EMPRESA</b>Bemol Digital</div><div><b>AUTORA</b>Juliana Ballin Lima</div><div><b>VAGA</b>Data Engineer I</div><div><b>DATASET</b>Brazilian E-Commerce Public Dataset by Olist</div><div><b>TECNOLOGIAS</b>Python, pandas, DuckDB, SQL, Chart.js, Three.js, Vercel</div><div><b>DATA</b>Novembro de 2026</div></div></div>
