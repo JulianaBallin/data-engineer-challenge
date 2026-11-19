@@ -128,10 +128,9 @@
 </footer>
 <button class="olli-fab" id="olliFab" aria-label="Abrir a Olli, assistente de dados"><span data-olli></span><span class="ping"></span></button>
 <section class="olli-panel" id="olliPanel" role="dialog" aria-label="Olli, assistente de dados">
-  <div class="olli-head"><span data-olli></span><div><b>Olli</b><small>Assistente de dados do histórico Olist</small></div><button id="olliClose" aria-label="Fechar">✕</button></div>
+  <div class="olli-head"><span data-olli></span><div><b>Olli</b><small>Assistente de dados do histórico Olist</small></div><button id="olliClear" aria-label="Nova conversa" title="Nova conversa"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button><button id="olliClose" aria-label="Fechar">✕</button></div>
   <div class="olli-msgs" id="olliMsgs"></div>
-  <div class="chips" id="olliChips"></div>
-  <form class="olli-form" id="olliForm"><input id="olliInput" maxlength="500" placeholder="Pergunte sobre vendas, entregas, notas..." autocomplete="off"><button aria-label="Enviar">➤</button></form>
+    <form class="olli-form" id="olliForm"><input id="olliInput" maxlength="500" placeholder="Pergunte sobre vendas, entregas, notas..." aria-label="Mensagem para a Olli" autocomplete="off"><button aria-label="Enviar">➤</button></form>
 </section>
 <div class="toast" id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

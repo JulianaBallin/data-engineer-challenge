@@ -176,7 +176,7 @@ Foram aplicadas **21 regras**, todas documentadas com contagem de registros e ju
 
 ## Testes
 
-- `scripts/test-api.js` (28 verificações): autenticação, proteção dos dados, projeção e perguntas à Olli (inclusive fora do escopo).
+- `scripts/test-api.js` (36 verificações): autenticação, proteção dos dados, projeção e perguntas à Olli (inclusive fora do escopo).
 - Dashboard validado em Chrome headless (todas as seções, temas claro e escuro, desktop e celular), sem erros de JavaScript.
 
 ## Estrutura

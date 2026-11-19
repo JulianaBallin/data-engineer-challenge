@@ -196,7 +196,7 @@ def build_sections():
  ("Login correto", "200 e cookie HttpOnly assinado"),
  ("Cookie adulterado", "401"),
  ("Acesso direto ao arquivo de dados", "404"),
- ("Suíte de API (scripts/test-api.js): autenticação, dados, projeção e 12 perguntas à Olli", "28 verificações aprovadas, localmente e em produção"),
+ ("Suíte de API (scripts/test-api.js): autenticação, dados, projeção e 12 perguntas à Olli", "36 verificações aprovadas, localmente e em produção"),
  ("Olli com perguntas fora do escopo (clima, esportes, injeção de instruções)", "Responde que não tem o dado"),
  ("Dashboard em Chrome headless (7 seções do dashboard e a Cadeia 3D, incluindo WebGL), temas claro e escuro, desktop e celular", "Sem erros de JavaScript e sem rolagem horizontal")])}
 <p>Antes de obter os dados reais, o pipeline também foi testado com dados sintéticos no mesmo esquema, que foram descartados.</p>"""))

@@ -126,8 +126,9 @@ window.OI_chain = (() => {
   }
 
   // posições no mapa (x, z) e quanto cada estação "olha" para a estrada
-  const ROAD = [[-44, 10], [-33, 8], [-24, 2], [-17, -6], [-8, -8], [0, -3], [6, 4], [14, 8], [22, 4], [29, -4], [38, -6], [46, -2]];
-  const SPOT = { vendedor: [-36, -1], marketplace: [-12, -20], pagamento: [8, -17], distribuicao: [6, 17], cliente: [31, 14], avaliacao: [40, -17] };
+  // circuito fechado, no sentido horário, passando na frente de cada etapa (na ordem da cadeia)
+  const ROAD = [[-30, 2], [-25, -8], [-12, -12], [2, -12], [14, -10], [26, -9], [31, -1], [27, 6], [14, 9], [2, 10], [-10, 9], [-22, 8]];
+  const SPOT = { vendedor: [-40, 2], marketplace: [-22, -19], pagamento: [2, -21], distribuicao: [28, -17], cliente: [38, 7], avaliacao: [-12, 19] };
 
   function mount(canvas, tipEl, stages, onSelect) {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -157,7 +158,7 @@ window.OI_chain = (() => {
     const lake = new T.Mesh(new T.CircleGeometry(7, 40), water); lake.rotation.x = -Math.PI / 2; lake.position.set(-52, 0.05, 16); lake.scale.set(1.3, 1, 0.8); world.add(lake);
 
     // estrada
-    const road = new T.CatmullRomCurve3(ROAD.map(([x, z]) => new T.Vector3(x, 0, z)), false, "catmullrom", 0.5);
+    const road = new T.CatmullRomCurve3(ROAD.map(([x, z]) => new T.Vector3(x, 0, z)), true, "catmullrom", 0.5);
     asphaltTex.wrapS = asphaltTex.wrapT = T.RepeatWrapping; asphaltTex.repeat.set(1, 20); dashTex.wrapS = dashTex.wrapT = T.RepeatWrapping;
     world.add(ribbon(road, 4.4, new T.MeshStandardMaterial({ map: asphaltTex, roughness: 0.95 }), 0.05, 220, 0.12));
     world.add(ribbon(road, 4.9, std(0xc9cdd2, { roughness: 1 }), 0.045, 220));
@@ -166,10 +167,12 @@ window.OI_chain = (() => {
     // estações
     const holders = stages.map((s, i) => {
       const g = build[s.model](); const [x, z] = SPOT[s.model];
-      let best = 1e9, bp = null; for (let k = 0; k <= 200; k++) { const p = road.getPointAt(k / 200), d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < best) { best = d; bp = p; } }
+      let best = 1e9, bp = null, bu = 0; for (let k = 0; k < 400; k++) { const p = road.getPointAt(k / 400), d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < best) { best = d; bp = p; bu = k / 400; } }
+      { const dx = x - bp.x, dz = z - bp.z, dl = Math.hypot(dx, dz), ex = x - (dx / dl) * 5.4, ez = z - (dz / dl) * 5.4;
+        world.add(ribbon(new T.LineCurve3(new T.Vector3(bp.x, 0, bp.z), new T.Vector3(ex, 0, ez)), 3.4, new T.MeshStandardMaterial({ color: 0x34393f, roughness: 0.95 }), 0.055, 12)); }
       const slab = box(12.6, 0.14, 11, std(0x8d949c, { roughness: 1 }), 0, -0.02, 0.4); g.add(slab); // piso de concreto
       g.position.set(x, 0, z); g.rotation.y = Math.atan2(bp.x - x, bp.z - z);
-      Object.assign(g.userData, { i, s, home: new T.Vector3(x, 0, z), scale0: 0 }); g.scale.setScalar(0.001); world.add(g);
+      Object.assign(g.userData, { i, s, home: new T.Vector3(x, 0, z), stopU: bu, front: new T.Vector3(x + (bp.x - x) * 0.55, 0, z + (bp.z - z) * 0.55) }); g.scale.setScalar(0.001); world.add(g);
       g.traverse((o) => { if (o.isMesh) o.userData.holder = g; });
       const l = label(s.name, s.metric + (s.short ? " " + s.short : "")); l.position.set(x, 14.5, z); world.add(l); g.userData.label = l;
       // pilha de moedas proporcional ao gasto
@@ -193,15 +196,16 @@ window.OI_chain = (() => {
       t.position.set(x, 0, z); world.add(t); placed.push(t.position); k++; }
 
     // fluxo: pacotes na estrada, caminhão, fumaça
-    const pk = []; for (let i = 0; i < 10; i++) { const p = box(0.9, 0.9, 0.9, std(0xc9a27a, { roughness: 0.9 }), 0, 0.25, 0); p.userData.t = i / 10; world.add(p); pk.push(p); }
-    const tr = truck(); world.add(tr);
+    const crate = box(1, 1, 1, std(0xc9a27a, { roughness: 0.9 }), 0, 0, 0); crate.visible = false; world.add(crate);
+    const tr = truck(); world.add(tr); const L = road.getLength(), WAIT = 3, VMAX = 10; const stops = holders.map((h) => h.userData.stopU);
+    const run = { u: stops[0], next: 1, wait: WAIT, at: 0, left: 0, last: 0 };
     const smokeMat = () => new T.MeshBasicMaterial({ color: 0xe6e9ed, transparent: true, opacity: 0.5, depthWrite: false });
     const smoke = []; for (let i = 0; i < 18; i++) { const m = new T.Mesh(new T.SphereGeometry(0.5, 10, 10), smokeMat()); m.userData.t = i / 18; world.add(m); smoke.push(m); }
 
     // câmera orbital com foco animado
-    const MAP_C = new T.Vector3(3, 0, -1), target = MAP_C.clone(), tgtGoal = MAP_C.clone();
-    let rotY = 0.35, rotX = 0.78, dist = 96, distGoal = 96, auto = !reduce, drag = null, sel = null, hover = null, ready = false;
-    const MAP_DIST = 96;
+    const MAP_C = new T.Vector3(0, 0, -1), target = MAP_C.clone(), tgtGoal = MAP_C.clone();
+    let rotY = 0.35, rotX = 0.78, dist = 104, distGoal = 104, auto = !reduce, drag = null, sel = null, hover = null, ready = false;
+    const MAP_DIST = 104;
     canvas.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; auto = false; canvas.setPointerCapture(e.pointerId); });
     canvas.addEventListener("pointerup", (e) => { const was = drag; drag = null; if (was && was.moved < 5) { const h = pick(e).hit; if (h) select(h.userData.i); } });
     canvas.addEventListener("wheel", (e) => { e.preventDefault(); distGoal = Math.min(150, Math.max(14, distGoal + e.deltaY * 0.06)); }, { passive: false });
@@ -226,19 +230,32 @@ window.OI_chain = (() => {
         target.lerp(tgtGoal, 0.06); dist += (distGoal - dist) * 0.06;
         camera.position.set(target.x + Math.sin(rotY) * Math.cos(rotX) * dist, target.y + Math.sin(rotX) * dist, target.z + Math.cos(rotY) * Math.cos(rotX) * dist); camera.lookAt(target);
         holders.forEach((g, i) => { const k = Math.min(1, Math.max(0, (t - t0 - i * 0.22) / 0.7)), e = 1 - Math.pow(1 - k, 3);
-          const pulse = (sel === i || hover === g) ? 1.04 : 1; g.scale.setScalar(Math.max(0.001, e * pulse)); if (g.userData.stack) g.userData.stack.scale.setScalar(Math.max(0.001, e));
+          const pulse = (sel === i || hover === g || run.active === i) ? 1.04 : 1; g.scale.setScalar(Math.max(0.001, e * pulse)); if (g.userData.stack) g.userData.stack.scale.setScalar(Math.max(0.001, e));
           g.userData.label.visible = e > 0.9 && (sel === null || sel === i);
           if (g.userData.spin) g.userData.spin.rotation.y = t * (g.userData.s.model === "pagamento" ? 1.2 : 0.8); if (g.userData.orbit) g.userData.orbit.rotation.y = -t * 0.6; });
-        pk.forEach((p) => { const u = (reduce ? p.userData.t : (t * 0.018 + p.userData.t)) % 1, pt = road.getPointAt(u), tn = road.getTangentAt(u); p.position.set(pt.x + tn.z * 0.8, 0.5, pt.z - tn.x * 0.8); p.rotation.y = Math.atan2(tn.x, tn.z); });
-        const u0 = 0.46, tu = reduce ? 0.8 : u0 + ((Math.sin(t * 0.22) + 1) / 2) * (0.96 - u0), fwd = Math.cos(t * 0.22) >= 0;
-        const pt = road.getPointAt(tu), tn = road.getTangentAt(tu); tr.position.set(pt.x - tn.z * 0.9, 0.05, pt.z + tn.x * 0.9); tr.rotation.y = Math.atan2(-tn.z, tn.x) + (fwd ? 0 : Math.PI) - (fwd ? 0 : 0);
+        // caminhão: percorre o circuito na ordem da cadeia e para um instante em cada etapa
+        const dt = Math.min(0.05, t - run.last); run.last = t;
+        if (reduce) { run.u = stops[2]; run.wait = WAIT * 0.4; run.at = 2; }
+        else if (run.wait > 0) { run.wait -= dt; if (run.wait <= 0) { run.left = 0; } }
+        else {
+          const target = stops[run.next], arc = ((target - run.u + 1) % 1) * L;
+          const v = VMAX * Math.min(1, Math.max(0.12, arc / 9)) * Math.min(1, 0.2 + run.left / 7);
+          const step = v * dt; run.left += step;
+          if (arc <= step + 0.05) { run.u = target; run.at = run.next; run.next = (run.next + 1) % stops.length; run.wait = WAIT; } else run.u = (run.u + step / L) % 1;
+        }
+        const pt = road.getPointAt(run.u), tn = road.getTangentAt(run.u);
+        tr.position.set(pt.x - tn.z * 0.9, 0.05, pt.z + tn.x * 0.9); tr.rotation.y = Math.atan2(-tn.z, tn.x);
+        const stopped = run.wait > 0, wp = stopped ? 1 - run.wait / WAIT : 1;
+        crate.visible = stopped && wp < 0.6;
+        if (crate.visible) { const s = Math.min(1, wp / 0.55), fr = holders[run.at].userData.front; crate.position.set(tr.position.x + (fr.x - tr.position.x) * s, 1.6 + Math.sin(Math.PI * s) * 3.4 * (1 - s * 0.4), tr.position.z + (fr.z - tr.position.z) * s); crate.rotation.y = s * 6; crate.scale.setScalar(0.9 - 0.4 * s); }
+        run.active = stopped ? run.at : -1;
         const f = holders[0]; if (f.scale.x > 0.5) { const src = f.userData.smoke; smoke.forEach((m, i) => { const [sx, sy, sz] = src[i % 2], u = reduce ? 0.3 : ((t * 0.2 + m.userData.t) % 1); tmp.set(sx, sy, sz).applyMatrix4(f.matrixWorld);
           m.position.set(tmp.x + u * 2.2, tmp.y + u * 5, tmp.z + u * 0.6); m.scale.setScalar(0.8 + u * 2.4); m.material.opacity = 0.55 * (1 - u); }); }
         renderer.render(scene, camera);
       }
       requestAnimationFrame(loop);
     })();
-    return { select, reset, toggleAuto: () => (auto = !auto) };
+    return { select, reset, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };
   }
   return { mount };
 })();

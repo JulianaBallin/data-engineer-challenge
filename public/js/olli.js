@@ -4,38 +4,48 @@
   document.querySelectorAll("[data-olli]").forEach((el) => (el.style.display = "contents", el.innerHTML = ROBOT));
   const $ = (id) => document.getElementById(id);
   const panel = $("olliPanel"), msgs = $("olliMsgs"), input = $("olliInput");
-  const history = []; let busy = false, started = false;
-  const SUG = ["Quais as 10 categorias com maior receita?", "Qual estado tem mais atraso?", "Atraso afeta a nota?", "Qual o meio de pagamento mais usado?", "Quanto os clientes pagam de frete?"];
+  let history = [], busy = false, started = false;
+  const SUG = ["Quais as 10 categorias com maior receita?", "Qual estado tem mais atraso?", "Atraso afeta a nota?", "Quanto vamos faturar em 2027?", "Sobre o que é o dataset?"];
+  const HELLO = "Oi! Eu sou a Olli, a assistente de dados do Olist Insights. Respondo só com base no histórico da Olist (2016 a 2018): vendas, entregas, notas, pagamentos e clientes. Se eu não tiver o dado, eu aviso. Por onde começamos?";
 
-  function add(text, who, meta) {
-    const d = document.createElement("div"); d.className = "msg " + who; d.textContent = text;
-    if (meta) { const s = document.createElement("small"); s.textContent = meta; d.appendChild(s); }
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d;
+  // texto seguro: escapa HTML e aceita apenas **negrito** e quebras de linha
+  const fmt = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+  const scroll = () => (msgs.scrollTop = msgs.scrollHeight);
+  const clearChips = () => msgs.querySelectorAll(".chips-inline").forEach((e) => e.remove());
+
+  function add(text, who) {
+    const d = document.createElement("div"); d.className = "msg " + who; d.innerHTML = fmt(text); msgs.appendChild(d); scroll(); return d;
   }
-  function open() {
-    panel.classList.add("open"); input.focus();
-    if (!started) { started = true;
-      add("Oi! Eu sou a Olli 🤖 Respondo só com base no histórico da Olist (2016 a 2018): vendas, entregas, notas, pagamentos e clientes. Se eu não tiver o dado, eu aviso.", "bot");
-      $("olliChips").innerHTML = SUG.map((s) => `<button type="button">${s}</button>`).join(""); }
+  function chips(list) {
+    clearChips(); if (!list || !list.length) return;
+    const c = document.createElement("div"); c.className = "chips-inline";
+    list.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.onclick = () => send(s); c.appendChild(b); });
+    msgs.appendChild(c); scroll();
   }
-  $("olliFab").onclick = () => (panel.classList.contains("open") ? panel.classList.remove("open") : open());
-  $("olliClose").onclick = () => panel.classList.remove("open");
-  $("olliChips").onclick = (e) => { const b = e.target.closest("button"); if (b) send(b.textContent); };
+  function welcome() { msgs.innerHTML = ""; history = []; add(HELLO, "bot"); chips(SUG); }
+  function open() { panel.classList.add("open"); input.focus(); if (!started) { started = true; welcome(); } }
+  const close = () => panel.classList.remove("open");
+
+  $("olliFab").onclick = () => (panel.classList.contains("open") ? close() : open());
+  $("olliClose").onclick = close;
+  $("olliClear").onclick = () => { if (!busy) welcome(); };
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && panel.classList.contains("open")) close(); });
   $("olliForm").onsubmit = (e) => { e.preventDefault(); send(input.value); };
 
   async function send(text) {
     text = text.trim(); if (!text || busy) return;
-    busy = true; input.value = ""; $("olliChips").innerHTML = "";
+    busy = true; input.value = ""; clearChips(); $("olliForm").classList.add("busy");
     add(text, "me");
     const wait = add("", "bot"); wait.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
     try {
       const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, history }) });
       if (r.status === 401) return (location.href = "/");
-      const j = await r.json();
-      wait.textContent = j.answer || "Não consegui responder agora.";
-      if (j.sources && j.sources.length) { const s = document.createElement("small"); s.textContent = "Baseado em " + j.sources.length + " trecho(s) dos dados" + (j.mode === "llm" ? "" : ""); wait.appendChild(s); }
-      history.push({ role: "user", content: text }, { role: "assistant", content: j.answer || "" });
+      const j = await r.json(), answer = j.answer || "Não consegui responder agora. Tente de novo em instantes.";
+      wait.innerHTML = fmt(answer);
+      if (j.sources && j.sources.length) { const s = document.createElement("small"); s.textContent = "Baseado em " + j.sources.length + " trecho(s) dos dados"; wait.appendChild(s); }
+      history.push({ role: "user", content: text }, { role: "assistant", content: answer });
+      chips(j.suggestions);
     } catch { wait.textContent = "Tive um problema de conexão. Tente de novo."; }
-    busy = false; msgs.scrollTop = msgs.scrollHeight;
+    busy = false; $("olliForm").classList.remove("busy"); input.focus(); scroll();
   }
 })();
