@@ -10,6 +10,7 @@ from pptx.enum.text import PP_ALIGN
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/apresentacao"
 LOGO = ROOT / "assets/logo/bemol-digital-logo.png"
+LOGO_W = ROOT / "assets/logo/bemol-digital-logo-branca.png"
 SYM = ROOT / "assets/logo/olist-insights-simbolo.png"
 DARK, ORANGE, LIGHT, MUTED, WHITE = (RGBColor(0x14, 0x16, 0x18), RGBColor(0xF6, 0x85, 0x1B),
     RGBColor(0xF2, 0xF4, 0xF6), RGBColor(0x6A, 0x73, 0x7D), RGBColor(255, 255, 255))
@@ -68,8 +69,7 @@ text(s, 3.0, 1.3, 9.5, 1, "Olist Insights", 54, True, WHITE)
 text(s, 3.0, 2.4, 9.5, 1.2, "Pipeline ETL, Data Warehouse em DuckDB e dashboard de e-commerce", 24, color=RGBColor(0xA7, 0xAD, 0xB4))
 text(s, 3.0, 3.8, 9.5, 0.6, "DESAFIO TÉCNICO | DATA ENGINEER I", 16, True, ORANGE)
 text(s, 0.9, 5.6, 7, 1, ["Juliana Ballin Lima", "Novembro de 2026"], 16, color=WHITE)
-rect(s, 9.0, 5.7, 3.8, 1.25, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
-s.shapes.add_picture(str(LOGO), Inches(9.2), Inches(5.95), width=Inches(3.4))
+s.shapes.add_picture(str(LOGO_W), Inches(9.2), Inches(5.95), width=Inches(3.4))
 
 # 2 problema
 s = slide("O problema")
@@ -141,8 +141,7 @@ bullets(s, ["Base confiável: regras auditáveis, camadas separadas e nenhum dad
 
 # 12 encerramento
 s = slide("", dark=True)
-rect(s, 3.9, 1.5, 5.5, 1.7, WHITE, MSO_SHAPE.ROUNDED_RECTANGLE)
-s.shapes.add_picture(str(LOGO), Inches(4.2), Inches(1.85), width=Inches(4.9))
+s.shapes.add_picture(str(LOGO_W), Inches(4.2), Inches(1.85), width=Inches(4.9))
 text(s, 0, 3.8, 13.333, 1, "Obrigada!", 48, True, WHITE, PP_ALIGN.CENTER)
 text(s, 0, 4.9, 13.333, 0.8, "Juliana Ballin Lima | github.com/JulianaBallin/data-engineer-challenge", 18, color=ORANGE, align=PP_ALIGN.CENTER)
 

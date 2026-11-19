@@ -226,9 +226,9 @@ figcaption { font-size: 8.5pt; color: #617080; margin-top: 4px; }
 PB = {"s1", "s4", "s6", "s7", "s8", "s9", "sref"}
 
 
-def logo_uri():
+def logo_uri(white=False):
     import base64
-    return "data:image/png;base64," + base64.b64encode((ROOT / "assets/logo/bemol-digital-logo.png").read_bytes()).decode()
+    return "data:image/png;base64," + base64.b64encode((ROOT / ("assets/logo/bemol-digital-logo-branca.png" if white else "assets/logo/bemol-digital-logo.png")).read_bytes()).decode()
 
 
 def render(pages):
@@ -238,7 +238,7 @@ def render(pages):
         toc += f'<a href="#{sid}"><span>{escape(title)}</span><span>{pages.get(sid, "")}</span></a>'
     body = "".join(f'<section id="{sid}" class="{"pb" if sid in PB else ""}"><h1>{escape(title)}</h1>{html}</section>' for sid, title, html in S)
     return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório técnico: Olist Data Engineering</title><style>{CSS.replace("@@LOGO@@", logo_uri())}</style></head><body>
-<div class="cover"><div class="band"><div style="background:#fff;border-radius:3mm;padding:3mm 4mm;width:58mm;position:absolute;top:16mm;right:22mm"><img src="{logo_uri()}" style="width:100%;display:block" alt="Bemol"></div><div class="kicker">RELATÓRIO TÉCNICO &nbsp;|&nbsp; DESAFIO DATA ENGINEER I</div>
+<div class="cover"><div class="band"><div style="width:58mm;position:absolute;top:16mm;right:22mm"><img src="{logo_uri(True)}" style="width:100%;display:block" alt="Bemol"></div><div class="kicker">RELATÓRIO TÉCNICO &nbsp;|&nbsp; DESAFIO DATA ENGINEER I</div>
 <span class="h1b" style="display:block;font-size:40pt;font-weight:700;margin:12mm 0 4mm;border-bottom:4px solid #e2761b;padding-bottom:6mm;width:78%">Olist Data Engineering</span>
 <div class="sub">Pipeline ETL, mini Data Warehouse em DuckDB, análise exploratória e dashboard 3D com autenticação</div></div><div class="stripe"></div>
 <div class="meta"><div><b>EMPRESA</b>Bemol Digital</div><div><b>AUTORA</b>Juliana Ballin Lima</div><div><b>VAGA</b>Data Engineer I</div><div><b>DATASET</b>Brazilian E-Commerce Public Dataset by Olist</div><div><b>TECNOLOGIAS</b>Python, pandas, DuckDB, SQL, Chart.js, Three.js, Vercel</div><div><b>DATA</b>Novembro de 2026</div></div></div>
