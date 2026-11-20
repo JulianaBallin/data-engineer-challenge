@@ -256,3 +256,14 @@ body.view-supply main { padding-top: 28px; }
 .olli-head button svg { width: 16px; height: 16px; background: none; padding: 0; border-radius: 0; } .olli-head #olliClear { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.18); color: #fff; margin-left: auto; }
 .field .toggle { display: grid; place-items: center; padding: 0 14px; height: 100%; color: var(--muted); transition: color .2s; }
 .field .toggle:hover, .field .toggle:focus-visible { color: var(--primary); outline: none; }
+
+.sup-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.stage .map2d { width: 100%; height: auto; display: block; border-radius: 26px; box-shadow: var(--shadow); background: #6f9f45; }
+.map2d text { font-family: inherit; pointer-events: none; }
+.map2d .st { cursor: pointer; outline: none; } .map2d .st .ring { fill: #f6851b; opacity: 0; transition: opacity .2s; }
+.map2d .st:hover .ring, .map2d .st:focus-visible .ring, .map2d .st.sel .ring { opacity: .28; } .map2d .st.active .ring { opacity: .18; }
+.map2d .smoke { fill: #e6e9ed; opacity: .7; animation: smoke 3.2s ease-in infinite; } .map2d .smoke.s2 { animation-delay: 1.4s; }
+@keyframes smoke { from { transform: translateY(0) scale(.7); opacity: .7; } to { transform: translateY(-26px) scale(1.7); opacity: 0; } }
+.map2d .star { transform-box: fill-box; transform-origin: center; animation: spin 5s linear infinite; } @keyframes spin { to { transform: rotateY(360deg); } }
+.session-note { margin: 0 0 16px; padding: 12px 14px; border-radius: 14px; font-size: 13px; background: color-mix(in srgb, var(--primary) 12%, var(--surface-2)); line-height: 1.5; }
+.session-note a { color: var(--primary); font-weight: 700; text-decoration: none; } .session-note button { color: var(--primary); font-weight: 700; text-decoration: underline; }

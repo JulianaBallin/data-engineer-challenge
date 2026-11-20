@@ -131,14 +131,15 @@ window.OI_chain = (() => {
   const ROAD = [[-30, 2], [-25, -8], [-12, -12], [2, -12], [14, -10], [26, -9], [31, -1], [27, 6], [14, 9], [2, 10], [-10, 9], [-22, 8]];
   const SPOT = { vendedor: [-40, 2], marketplace: [-22, -19], pagamento: [2, -21], distribuicao: [28, -17], cliente: [38, 7], avaliacao: [-12, 19] };
 
-  function mount(canvas, tipEl, stages, onSelect) {
+  function mount(canvas, tipEl, stages, onSelect, opts = {}) {
+    const light = !!opts.light;  // modo leve: sem sombras nem antialias, para GPUs fracas
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    const renderer = new T.WebGLRenderer({ canvas, antialias: !light, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(light ? 1 : Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = !light; renderer.shadowMap.type = T.PCFSoftShadowMap;
     renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
     const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, 0.5, 400);
     scene.add(new T.HemisphereLight(0xdff0ff, 0x6f8f55, 0.55));
-    const sun = new T.DirectionalLight(0xfff1d6, 0.95); sun.position.set(-40, 62, 34); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+    const sun = new T.DirectionalLight(0xfff1d6, 0.95); sun.position.set(-40, 62, 34); sun.castShadow = !light; if (!light) sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 50, bottom: -50, near: 10, far: 180 }); sun.shadow.bias = -0.0004; scene.add(sun);
     const world = new T.Group(); scene.add(world);
 
@@ -188,7 +189,7 @@ window.OI_chain = (() => {
     // árvores e arbustos
     const trunk = std(0x6b4a2f), foliage = [std(0x3f7d3a), std(0x4c8f43), std(0x2f6a35)];
     const placed = [...holders.map((h) => h.position)]; const RT = rand(21);
-    for (let k = 0, tries = 0; k < 120 && tries < 2500; tries++) {
+    for (let k = 0, tries = 0; k < (light ? 36 : 120) && tries < 2500; tries++) {
       const x = (RT() - 0.5) * 138, z = (RT() - 0.5) * 84; if (z < -28 && Math.abs(z + 33) < 6) continue;
       if (placed.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 < 150)) continue;
       let near = false; for (let q = 0; q <= 60; q++) { const p = road.getPointAt(q / 60); if ((p.x - x) ** 2 + (p.z - z) ** 2 < 28) { near = true; break; } } if (near) continue;
@@ -223,7 +224,7 @@ window.OI_chain = (() => {
     new ResizeObserver(resize).observe(canvas); resize();
 
     const clock = new T.Clock(); let t0 = 0; const tmp = new T.Vector3();
-    let failed = false;
+    let failed = false, frames = 0;
     (function loop() {
       if (!canvas.isConnected || failed) return;
       try {
@@ -255,6 +256,11 @@ window.OI_chain = (() => {
         const f = holders[0]; if (f.scale.x > 0.5) { const src = f.userData.smoke; smoke.forEach((m, i) => { const [sx, sy, sz] = src[i % 2], u = reduce ? 0.3 : ((t * 0.2 + m.userData.t) % 1); tmp.set(sx, sy, sz).applyMatrix4(f.matrixWorld);
           m.position.set(tmp.x + u * 2.2, tmp.y + u * 5, tmp.z + u * 0.6); m.scale.setScalar(0.8 + u * 2.4); m.material.opacity = 0.55 * (1 - u); }); }
         renderer.render(scene, camera);
+        if (++frames === 45) { // se nada foi desenhado (GPU sem suporte real), avisa para trocar para o 2D
+          const gl = renderer.getContext(), px = new Uint8Array(4); let any = false;
+          for (let a = 1; a < 6; a++) for (let b = 1; b < 4; b++) { gl.readPixels(Math.floor((canvas.width * a) / 6), Math.floor((canvas.height * b) / 4), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); if (px[3] > 0) any = true; }
+          if (!any) { failed = true; onSelect && onSelect(-2); return; }
+        }
       }
       } catch (e) { failed = true; console.error("Cadeia 3D:", e); onSelect && onSelect(-1, e); return; }
       requestAnimationFrame(loop);
