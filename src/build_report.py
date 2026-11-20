@@ -166,13 +166,14 @@ def build_sections():
 {img(REL / "img" / "tela-clientes.png", "Figura 20: Dashboard, clientes.", "64%")}
 {img(REL / "img" / "tela-projecao.png", "Figura 21: Dashboard, projeção com regressão linear e cenários.", "64%")}
 {img(REL / "img" / "tela-cadeia-3d.png", "Figura 22: Cadeia 3D, mapa completo.", "86%")}
-{img(REL / "img" / "tela-cadeia-etapa.png", "Figura 23: Cadeia 3D, detalhes apenas da etapa clicada.", "86%")}
-{img(REL / "img" / "tela-olli.png", "Figura 24: assistente Olli respondendo só com os dados do histórico.", "86%")}
-{img(REL / "img" / "tela-notebook.png", "Figura 25: notebook no Jupyter, com a justificativa da modelagem.", "86%")}
-{img(REL / "img" / "tela-notebook-grafico.png", "Figura 26: notebook no Jupyter, com resultado, gráfico e conclusão de negócio.", "86%")}
+{img(REL / "img" / "tela-cadeia-3d-navegador.png", "Figura 23: Cadeia 3D aberta no navegador, com o mapa girado pelo usuário e os números de 1 a 6 mostrando a ordem do fluxo.", "86%")}
+{img(REL / "img" / "tela-cadeia-etapa.png", "Figura 24: Cadeia 3D, detalhes apenas da etapa clicada.", "86%")}
+{img(REL / "img" / "tela-olli.png", "Figura 25: assistente Olli respondendo só com os dados do histórico.", "86%")}
+{img(REL / "img" / "tela-notebook.png", "Figura 26: notebook no Jupyter, com a justificativa da modelagem.", "86%")}
+{img(REL / "img" / "tela-notebook-grafico.png", "Figura 27: notebook no Jupyter, com resultado, gráfico e conclusão de negócio.", "86%")}
 <h3>9.1 Autenticação</h3>
 <p>O Vercel hospeda apenas arquivos estáticos e funções; por isso um login feito só no navegador não protegeria os dados. A solução usa funções serverless: a senha é verificada com scrypt contra um hash guardado em variável de ambiente, e a sessão é um cookie HttpOnly, Secure e SameSite=Strict assinado com HMAC-SHA256 e expiração de 8 horas. Os dados ficam em arquivo privado (<code>api/_data</code>), fora da pasta pública, e só são entregues pela rota <code>/api/data</code> com sessão válida.</p>
-{img(DOCS_DIR / "diagrams" / "auth_flow.svg", "Figura 27: fluxo de autenticação e acesso aos dados.")}"""))
+{img(DOCS_DIR / "diagrams" / "auth_flow.svg", "Figura 28: fluxo de autenticação e acesso aos dados.")}"""))
 
     S.append(("s9b", "10 Projeção, cadeia 3D e assistente Olli", """
 <h2>10.1 Projeção de receita</h2>

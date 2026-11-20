@@ -157,6 +157,11 @@ Foram aplicadas **21 regras**, todas documentadas com contagem de registros e ju
   <img src="docs/relatorio/img/tela-cadeia-3d.png" alt="Mapa 3D da cadeia do pedido" width="49%">
 </p>
 
+<p align="center">
+  <img src="docs/relatorio/img/tela-cadeia-3d-navegador.png" alt="Cadeia 3D aberta no navegador" width="49%">
+  <img src="docs/relatorio/img/tela-cadeia-etapa.png" alt="Cadeia 3D: detalhes só da etapa clicada" width="49%">
+</p>
+
 - **Online:** https://data-engineer-challenge.vercel.app (login de teste: `bemol` / `bemol@2026`).
 - Menu com **Dashboard** (visão geral, vendas, logística, satisfação, financeiro, clientes e projeção) e **Cadeia 3D**.
   Tema claro e escuro, filtro por estado, busca e gráficos clicáveis (Chart.js).
