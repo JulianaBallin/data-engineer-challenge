@@ -28,9 +28,9 @@
 
 <p align="center">
   <a href="https://data-engineer-challenge.vercel.app"><img alt="Dashboard" src="https://img.shields.io/badge/Dashboard-online-000000?style=for-the-badge&logo=vercel&logoColor=white"></a>
-  <a href="docs/relatorio/relatorio-tecnico-olist.pdf"><img alt="Relatório" src="https://img.shields.io/badge/Relat%C3%B3rio-PDF-D97757?style=for-the-badge&logo=adobeacrobatreader&logoColor=white"></a>
-  <a href="docs/apresentacao/apresentacao-olist.pdf"><img alt="Apresentação" src="https://img.shields.io/badge/Apresenta%C3%A7%C3%A3o-PDF-B7472A?style=for-the-badge&logo=microsoftpowerpoint&logoColor=white"></a>
-  <a href="docs/apresentacao/apresentacao-olist.pptx"><img alt="PPTX" src="https://img.shields.io/badge/Apresenta%C3%A7%C3%A3o-PPTX-B7472A?style=for-the-badge&logo=microsoftpowerpoint&logoColor=white"></a>
+  <a href="docs/relatorio/relatorio-tecnico-olist.pdf"><img alt="Relatório" src="https://img.shields.io/badge/Relat%C3%B3rio-PDF-D97757?style=for-the-badge&logo=googledocs&logoColor=white"></a>
+  <a href="docs/apresentacao/apresentacao-olist.pdf"><img alt="Apresentação" src="https://img.shields.io/badge/Apresenta%C3%A7%C3%A3o-PDF-B7472A?style=for-the-badge&logo=googleslides&logoColor=white"></a>
+  <a href="docs/apresentacao/apresentacao-olist.pptx"><img alt="PPTX" src="https://img.shields.io/badge/Apresenta%C3%A7%C3%A3o-PPTX-B7472A?style=for-the-badge&logo=googleslides&logoColor=white"></a>
   <a href="notebooks/exploratory_analysis.ipynb"><img alt="Notebook" src="https://img.shields.io/badge/Notebook-10%20an%C3%A1lises-F37626?style=for-the-badge&logo=jupyter&logoColor=white"></a>
   <a href="https://colab.research.google.com/github/JulianaBallin/data-engineer-challenge/blob/main/notebooks/executar_no_colab.ipynb"><img alt="Colab" src="https://img.shields.io/badge/Colab-abrir-F9AB00?style=for-the-badge&logo=googlecolab&logoColor=white"></a>
   <a href="#como-executar"><img alt="make run" src="https://img.shields.io/badge/executar%20tudo-make%20run-24272a?style=for-the-badge&logo=gnu&logoColor=white"></a>
