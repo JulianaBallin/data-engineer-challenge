@@ -177,7 +177,7 @@ T = [("kaggle", "Kaggle", "Download dos 9 CSVs brutos do dataset Olist para a ca
      ("jupyter", "Jupyter", "Notebook com as 5 consultas SQL, gráficos e conclusões de negócio."),
      ("nodedotjs", "Node.js", "API com login (scrypt, cookie HttpOnly) e rota protegida de dados."),
      ("chartdotjs", "Chart.js", "Dashboard com gráficos clicáveis, filtros e tema claro e escuro."),
-     ("threedotjs", "Three.js", "Cenas 3D: poliedro do login, supply chain e receita mensal."),
+     ("threedotjs", "Three.js", "Mapa 3D da cadeia do pedido (supply chain), com detalhes por etapa."),
      ("vercel", "Vercel", "Deploy do dashboard e da API, com variáveis de ambiente seguras."),
      ("github", "GitHub", "Versionamento com commits convencionais e README profissional."),
      ("claude", "Claude Code (IA)", "Apoio em documentação, interface do dashboard e assistente Olli.")]

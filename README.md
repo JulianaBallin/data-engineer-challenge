@@ -39,7 +39,7 @@
     <td width="50%"><img src="docs/relatorio/img/tela-cadeia-3d-navegador.png" alt="Cadeia 3D"><br><sub><b>Cadeia 3D</b>: mapa com o fluxo do pedido (1 a 6)</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/relatorio/img/dashboard-login.png" alt="Login"><br><sub><b>Login</b> com cena 3D</sub></td>
+    <td width="50%"><img src="docs/relatorio/img/dashboard-login.png" alt="Login"><br><sub><b>Login seguro</b>: senha com scrypt e sessão em cookie HttpOnly assinado</sub></td>
     <td width="50%"><img src="docs/relatorio/img/tela-projecao.png" alt="Projeção"><br><sub><b>Projeção</b>: regressão e cenários, com a margem de erro</sub></td>
   </tr>
 </table>

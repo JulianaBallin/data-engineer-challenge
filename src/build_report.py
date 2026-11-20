@@ -157,7 +157,7 @@ def build_sections():
 <p>Os resultados do warehouse foram exportados para JSON e expostos em um dashboard interativo, com tema escuro e claro, seções por tópico (visão geral, vendas, logística, satisfação, financeiro, clientes e projeção), filtros, detalhamento por estado, contadores animados e uma página de Cadeia 3D (Three.js): um mapa com a estrada do pedido, em que cada etapa pode ser clicada para ver só os números dela.</p>
 <h3>Telas do sistema</h3>
 <p>Prints do dashboard em produção (tema claro). O menu superior tem <b>Dashboard</b> e <b>Cadeia 3D</b>; dentro do dashboard há sete seções.</p>
-{img(REL / "img" / "dashboard-login.png", "Figura 14: tela de login com cena 3D.", "78%")}
+{img(REL / "img" / "dashboard-login.png", "Figura 14: tela de login (senha verificada com scrypt; sessão em cookie HttpOnly assinado com HMAC).", "78%")}
 {img(REL / "img" / "tela-visao-geral.png", "Figura 15: Dashboard, visão geral.", "64%")}
 {img(REL / "img" / "tela-vendas.png", "Figura 16: Dashboard, vendas.", "64%")}
 {img(REL / "img" / "tela-logistica.png", "Figura 17: Dashboard, logística.", "64%")}
