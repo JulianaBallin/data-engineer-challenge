@@ -39,12 +39,13 @@ window.OI_chain = (() => {
   const asphaltTex = canvasTex(64, 256, (g, w, h) => { g.fillStyle = "#34393f"; g.fillRect(0, 0, w, h); for (let i = 0; i < 700; i++) { g.fillStyle = `rgba(${R() < 0.5 ? 255 : 0},${R() < 0.5 ? 255 : 0},255,${R() * 0.05})`; g.fillRect(R() * w, R() * h, 2, 2); } }, null);
   const dashTex = canvasTex(16, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = "#f4f1e4"; g.fillRect(0, 6, w, 30); }, null);
 
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
   function label(text, sub) {
     const c = document.createElement("canvas"); c.width = 600; c.height = 170;
     const g = c.getContext("2d");
     g.shadowColor = "rgba(0,0,0,.25)"; g.shadowBlur = 14; g.shadowOffsetY = 4;
-    g.fillStyle = "#ffffff"; g.beginPath(); g.roundRect(14, 10, 572, 130, 36); g.fill();
-    g.shadowColor = "transparent"; g.fillStyle = "#f6851b"; g.beginPath(); g.roundRect(14, 10, 14, 130, 7); g.fill();
+    g.fillStyle = "#ffffff"; rr(g, 14, 10, 572, 130, 36); g.fill();
+    g.shadowColor = "transparent"; g.fillStyle = "#f6851b"; rr(g, 14, 10, 14, 130, 7); g.fill();
     g.fillStyle = "#1d2125"; g.font = "bold 50px Inter, Arial, sans-serif"; g.textAlign = "center"; g.fillText(text, 306, 70);
     g.fillStyle = "#e2761b"; g.font = "600 36px Inter, Arial, sans-serif"; g.fillText(sub, 306, 114);
     const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding;
@@ -222,8 +223,10 @@ window.OI_chain = (() => {
     new ResizeObserver(resize).observe(canvas); resize();
 
     const clock = new T.Clock(); let t0 = 0; const tmp = new T.Vector3();
+    let failed = false;
     (function loop() {
-      if (!canvas.isConnected) return;
+      if (!canvas.isConnected || failed) return;
+      try {
       if (canvas.offsetParent !== null) {
         const t = clock.getElapsedTime(); if (!t0) t0 = t;
         if (auto) rotY += 0.0012;
@@ -253,6 +256,7 @@ window.OI_chain = (() => {
           m.position.set(tmp.x + u * 2.2, tmp.y + u * 5, tmp.z + u * 0.6); m.scale.setScalar(0.8 + u * 2.4); m.material.opacity = 0.55 * (1 - u); }); }
         renderer.render(scene, camera);
       }
+      } catch (e) { failed = true; console.error("Cadeia 3D:", e); onSelect && onSelect(-1, e); return; }
       requestAnimationFrame(loop);
     })();
     return { select, reset, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };

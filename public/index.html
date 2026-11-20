@@ -10,7 +10,7 @@
 </head>
 <body class="login-page">
 <canvas id="hero3d"></canvas>
-<form class="login-card" id="form" autocomplete="on">
+<form class="login-card" id="form" autocomplete="on" method="post" action="#">
   <div class="brand"><span data-mark style="display:contents"></span><b>Olist Insights</b></div>
   <h1>Bem-vinda de volta</h1>
   <p class="sub">Entre para acessar o dashboard do Data Warehouse.</p>
@@ -18,7 +18,7 @@
     <div class="box"><input id="user" name="username" autocomplete="username" required autofocus></div></div>
   <div class="field"><label for="pass">Senha</label>
     <div class="box"><input id="pass" name="password" type="password" autocomplete="current-password" required>
-    <button type="button" class="toggle" id="toggle">Mostrar</button></div></div>
+    <button type="button" class="toggle" id="toggle" aria-label="Mostrar senha" title="Mostrar senha"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
   <div class="error" id="error" role="alert"></div>
   <button class="btn-primary" id="submit">Entrar</button>
   <p class="login-foot">Acesso restrito. Dados públicos do dataset Olist (Kaggle).</p>

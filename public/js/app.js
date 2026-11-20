@@ -99,8 +99,14 @@ function showSupply() {
   const intro = () => { info.innerHTML = `<div class="kicker">Mapa da cadeia</div><h3>Do vendedor ao cliente</h3><p class="hint">Clique em uma etapa do mapa para ver os números dela.<br><br>As <b>pilhas de moedas</b> mostram quanto dinheiro passa por cada ponto: receita de itens, total pago e frete.<br><br>Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>`; };
   const detail = (i) => { const s = S[i]; info.innerHTML = `<div class="kicker">${s.kicker}</div><h3>${s.name}</h3><div class="big mono">${s.metric}</div><div class="hint">${s.short}</div><p class="about">${s.about}</p><dl>${s.facts.map(([a, b]) => `<div><dt>${a}</dt><dd class="mono">${b}</dd></div>`).join("")}</dl>${s.share ? `<p class="hint" style="margin-top:16px">Fatia do total pago: <b>${num(s.share * 100, 1)}%</b></p><div class="bar"><i style="width:${s.share * 100}%"></i></div>` : ""}`; };
   intro();
-  window.chain3d = chain3d = window.OI_chain.mount($("supply3d"), $("tipSup"), S, (i) => (i == null ? intro() : detail(i)));
-  $("supReset").onclick = () => chain3d.reset();
+  
+  const fail = (e) => { info.innerHTML = `<div class="kicker">Mapa 3D</div><h3>Não foi possível exibir o mapa</h3><p class="hint">Seu navegador não conseguiu iniciar o 3D (WebGL). Tente atualizar a página (Ctrl+Shift+R), ativar a aceleração de hardware ou usar outro navegador.<br><br><small>${String((e && e.message) || e).replace(/[<>&]/g, "")}</small></p>`; };
+  try {
+    const gl = document.createElement("canvas").getContext("webgl") || document.createElement("canvas").getContext("experimental-webgl");
+    if (!gl) throw new Error("WebGL indisponível");
+    window.chain3d = chain3d = window.OI_chain.mount($("supply3d"), $("tipSup"), S, (i, err) => (i === -1 ? fail(err) : i == null ? intro() : detail(i)));
+  } catch (e) { console.error(e); fail(e); chain3d = null; return; }
+  $("supReset").onclick = () => chain3d && chain3d.reset();
 }
 
 async function showForecast(force) {
