@@ -139,6 +139,7 @@ window.OI_chain = (() => {
     const renderer = new T.WebGLRenderer({ canvas, antialias: !light, alpha: true });
     renderer.setPixelRatio(light ? 1 : Math.min(devicePixelRatio, 1.5)); renderer.shadowMap.enabled = !light; renderer.shadowMap.type = T.PCFShadowMap;
     renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
+    canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); failed = true; onSelect && onSelect(-3); });   // GPU reiniciou: pede para remontar o mapa
     const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, 0.5, 400);
     scene.add(new T.HemisphereLight(0xdff0ff, 0x6f8f55, 0.55));
     const sun = new T.DirectionalLight(0xfff1d6, 0.95); sun.position.set(-40, 62, 34); sun.castShadow = !light; if (!light) sun.shadow.mapSize.set(1024, 1024);
@@ -258,16 +259,16 @@ window.OI_chain = (() => {
         const f = holders[0]; if (f.scale.x > 0.5) { const src = f.userData.smoke; smoke.forEach((m, i) => { const [sx, sy, sz] = src[i % 2], u = reduce ? 0.3 : ((t * 0.2 + m.userData.t) % 1); tmp.set(sx, sy, sz).applyMatrix4(f.matrixWorld);
           m.position.set(tmp.x + u * 2.2, tmp.y + u * 5, tmp.z + u * 0.6); m.scale.setScalar(0.8 + u * 2.4); m.material.opacity = 0.55 * (1 - u); }); }
         renderer.render(scene, camera);
-        if (++frames === 45) { // se nada foi desenhado (GPU sem suporte real), avisa para trocar para o 2D
+        if (++frames % 150 === 45) { // confere de tempos em tempos se o mapa continua sendo desenhado
           const gl = renderer.getContext(), px = new Uint8Array(4); let any = false;
           for (let a = 1; a < 6; a++) for (let b = 1; b < 4; b++) { gl.readPixels(Math.floor((canvas.width * a) / 6), Math.floor((canvas.height * b) / 4), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); if (px[3] > 0) any = true; }
-          if (!any) { failed = true; onSelect && onSelect(-2); return; }
+          if (!any) { failed = true; onSelect && onSelect(frames === 45 ? -2 : -3); return; }
         }
       }
       } catch (e) { failed = true; console.error("Cadeia 3D:", e); onSelect && onSelect(-1, e); return; }
       requestAnimationFrame(loop);
     })();
-    return { select, reset, dispose: () => { failed = true; try { renderer.dispose(); renderer.forceContextLoss(); } catch {} }, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };
+    return { select, reset, health: () => { try { return !renderer.getContext().isContextLost(); } catch { return false; } }, lose: () => { const x = renderer.getContext().getExtension("WEBGL_lose_context"); x && x.loseContext(); }, dispose: () => { failed = true; try { renderer.dispose(); renderer.forceContextLoss(); } catch {} }, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };
   }
   return { mount };
 })();

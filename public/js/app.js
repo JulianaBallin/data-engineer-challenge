@@ -99,11 +99,16 @@ function showSupply() {
   const info = $("stageInfo");
   const intro = () => { info.innerHTML = `<div class="kicker">Mapa da cadeia</div><h3>Do vendedor ao cliente</h3>${note ? `<p class="hint"><small>${note} Mostrando a versão 2D. GPU detectada: ${gpu()}.</small></p>` : ""}<p class="hint">Clique em uma etapa do mapa para ver os números dela. Os <b>números nos rótulos</b> (1 a 6) mostram a ordem do fluxo.<br><br>As <b>pilhas de moedas</b> mostram quanto dinheiro passa por cada ponto: receita de itens, total pago e frete.<br><br>Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>`; };
   const detail = (i) => { const s = S[i]; info.innerHTML = `<div class="kicker">${s.kicker}</div><h3>${s.name}</h3><div class="big mono">${s.metric}</div><div class="hint">${s.short}</div><p class="about">${s.about}</p><dl>${s.facts.map(([a, b]) => `<div><dt>${a}</dt><dd class="mono">${b}</dd></div>`).join("")}</dl>${s.share ? `<p class="hint" style="margin-top:16px">Fatia do total pago: <b>${num(s.share * 100, 1)}%</b></p><div class="bar"><i style="width:${s.share * 100}%"></i></div>` : ""}`; };
-  const stageEl = $("supply3d").parentElement; let map = null, mode = null, note = "", triedLight = false;
+  const stageEl = $("supply3d").parentElement; let map = null, mode = null, note = "", triedLight = false, lost = 0, lastLight = false;
   const gpu = () => { try { const gl = document.createElement("canvas").getContext("webgl"); if (!gl) return "WebGL indisponível"; const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.VERSION); } catch { return "WebGL indisponível"; } };
   const hasGL = () => { try { const c = document.createElement("canvas"); return !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch { return false; } };
   const freshCanvas = () => { const old = $("supply3d"), c = document.createElement("canvas"); c.id = "supply3d"; old.replaceWith(c); return c; };
   const handler = (i, err) => {
+    if (i === -3) {   // o navegador perdeu o contexto WebGL (GPU reiniciou): remonta o 3D; se insistir, cai para o 2D
+      if (++lost <= 4) { console.warn("WebGL perdido, remontando o 3D (" + lost + ")"); setTimeout(() => { if (mode === "3d") { use3d(lastLight); intro(); } }, 500 * lost); }
+      else { note = "A GPU do navegador reiniciou várias vezes."; use2d(); intro(); }
+      return;
+    }
     if (i === -2 && !triedLight) { triedLight = true; console.warn("3D sem imagem: tentando o modo leve"); use3d(true); return; }
     if (i === -1 || i === -2) { note = i === -2 ? "O 3D não desenhou nada neste navegador." : "O 3D não pôde iniciar neste navegador."; console.warn(note, err); use2d(); intro(); }
     else if (i == null) intro(); else detail(i);
@@ -115,12 +120,13 @@ function showSupply() {
     map = window.OI_chain2d.mount(stageEl, $("tipSup"), S, handler); mode = "2d"; $("supMode").textContent = "Ver em 3D"; $("supMode").style.display = "";
   }
   function use3d(light) {
-    leave(); const canvas = freshCanvas(); canvas.style.display = "";
-    try { if (!hasGL()) throw new Error("WebGL indisponível"); map = chain3d = window.OI_chain.mount(canvas, $("tipSup"), S, handler, { light: !!light }); mode = "3d"; $("supMode").textContent = "Ver em 2D"; $("supMode").style.display = ""; }
+    lastLight = !!light; leave(); const canvas = freshCanvas(); canvas.style.display = "";
+    try { if (!hasGL()) throw new Error("WebGL indisponível"); const m3 = map = chain3d = window.OI_chain.mount(canvas, $("tipSup"), S, handler, { light: !!light }); mode = "3d"; setTimeout(() => { if (map === m3) lost = 0; }, 90000); $("supMode").textContent = "Ver em 2D"; $("supMode").style.display = ""; }
     catch (e) { note = "O 3D não está disponível neste navegador (" + gpu() + ")."; console.warn(e); mode = null; use2d(); }
   }
-  $("supMode").onclick = () => { note = ""; triedLight = false; if (mode === "3d") use2d(); else use3d(); intro(); };
+  $("supMode").onclick = () => { note = ""; triedLight = false; lost = 0; if (mode === "3d") use2d(); else use3d(); intro(); };
   use3d(); intro();
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && mode === "3d" && map && map.health && !map.health()) handler(-3); });
   $("supReset").onclick = () => map && map.reset();
 }
 
