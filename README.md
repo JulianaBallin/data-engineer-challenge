@@ -82,7 +82,7 @@ make run
 
 O `make run` cria o ambiente virtual, instala o `requirements.txt`, roda o ETL (Bronze, Silver e Gold), executa o notebook das 10 análises e exporta os dados do dashboard. Veja os demais comandos com `make help`.
 
-**Jupyter ou Colab:** `pip install -r requirements.txt`, `python src/pipeline.py` e abra o notebook, ou use o [notebook do Colab](notebooks/executar_no_colab.ipynb) (clona, instala, recebe os CSVs e roda tudo).
+**Jupyter ou Colab:** `pip install -r requirements.txt`, `python src/pipeline.py` e abra o notebook, ou use o [notebook do Colab](notebooks/executar_no_colab.ipynb) (instala, recebe os CSVs e roda tudo). O botão do Colab só abre direto se o repositório for público; sendo privado, baixe o `.ipynb`, envie em *File, Upload notebook* e use a opção de token ou de zip.
 
 <details>
 <summary>Rodar o dashboard localmente</summary>
