@@ -68,8 +68,9 @@ function render() {
   chart("c-pag", { type: "doughnut", data: { labels: pg.map((x) => x.tipo), datasets: [{ data: pg.map((x) => x.pagamentos), backgroundColor: [O, BLUE, G, "#c3a2ff", "#8b929a"], borderColor: css("--surface") }] }, options: { cutout: "55%" } });
 }
 
+let supplyInit = false;
 function showSupply() {
-  if (chain3d) return;
+  if (supplyInit) return; supplyInit = true;
   const k = D.kpis[0], pago = D.pagamentos.reduce((a, x) => a + x.valor, 0), pq = D.pagamentos.reduce((a, x) => a + x.pagamentos, 0);
   const frete = D.q4_frete_medio_uf.reduce((a, x) => a + x.frete_medio * x.itens, 0), fr = D.q4_frete_medio_uf, pz = [...D.prazo_uf].sort((a, b) => b.dias - a.dias);
   const nt = D.notas.reduce((a, x) => a + x.pedidos, 0), n5 = D.notas.find((x) => x.nota === 5).pedidos;
@@ -96,7 +97,7 @@ function showSupply() {
       facts: [["Nota média", num(k.nota_media, 2)], ["Notas 5 estrelas", num((n5 / nt) * 100, 1) + "%"], ["No prazo", num(np.nota_media, 2)], ["Com atraso", num(ca.nota_media, 2)]] },
   ];
   const info = $("stageInfo");
-  const intro = () => { info.innerHTML = `<div class="kicker">Mapa da cadeia</div><h3>Do vendedor ao cliente</h3>${note ? `<p class="hint"><small>${note} Mostrando a versão 2D. GPU detectada: ${gpu()}.</small></p>` : ""}<p class="hint">Clique em uma etapa do mapa para ver os números dela.<br><br>As <b>pilhas de moedas</b> mostram quanto dinheiro passa por cada ponto: receita de itens, total pago e frete.<br><br>Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>`; };
+  const intro = () => { info.innerHTML = `<div class="kicker">Mapa da cadeia</div><h3>Do vendedor ao cliente</h3>${note ? `<p class="hint"><small>${note} Mostrando a versão 2D. GPU detectada: ${gpu()}.</small></p>` : ""}<p class="hint">Clique em uma etapa do mapa para ver os números dela. Os <b>números nos rótulos</b> (1 a 6) mostram a ordem do fluxo.<br><br>As <b>pilhas de moedas</b> mostram quanto dinheiro passa por cada ponto: receita de itens, total pago e frete.<br><br>Só existe o que os dados trazem: não há indústria, produção nem estoque.</p>`; };
   const detail = (i) => { const s = S[i]; info.innerHTML = `<div class="kicker">${s.kicker}</div><h3>${s.name}</h3><div class="big mono">${s.metric}</div><div class="hint">${s.short}</div><p class="about">${s.about}</p><dl>${s.facts.map(([a, b]) => `<div><dt>${a}</dt><dd class="mono">${b}</dd></div>`).join("")}</dl>${s.share ? `<p class="hint" style="margin-top:16px">Fatia do total pago: <b>${num(s.share * 100, 1)}%</b></p><div class="bar"><i style="width:${s.share * 100}%"></i></div>` : ""}`; };
   const stageEl = $("supply3d").parentElement; let map = null, mode = null, note = "", triedLight = false;
   const gpu = () => { try { const gl = document.createElement("canvas").getContext("webgl"); if (!gl) return "WebGL indisponível"; const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.VERSION); } catch { return "WebGL indisponível"; } };
@@ -107,18 +108,18 @@ function showSupply() {
     if (i === -1 || i === -2) { note = i === -2 ? "O 3D não desenhou nada neste navegador." : "O 3D não pôde iniciar neste navegador."; console.warn(note, err); use2d(); intro(); }
     else if (i == null) intro(); else detail(i);
   };
+  function leave() { if (map && map.dispose) map.dispose(); if (map && map.destroy) map.destroy(); map = null; mode = null; }   // remove o mapa atual (3D ou 2D) por completo
   function use2d() {
-    if (map && mode === "2d") return;
-    $("supply3d").style.display = "none";
-    map = window.OI_chain2d.mount(stageEl, $("tipSup"), S, handler); mode = "2d"; $("supMode").textContent = "Tentar o 3D"; $("supMode").style.display = "";
+    if (mode === "2d") return;
+    leave(); $("supply3d").style.display = "none";
+    map = window.OI_chain2d.mount(stageEl, $("tipSup"), S, handler); mode = "2d"; $("supMode").textContent = "Ver em 3D"; $("supMode").style.display = "";
   }
   function use3d(light) {
-    if (map && mode === "2d") map.destroy();
-    const canvas = freshCanvas(); canvas.style.display = "";
+    leave(); const canvas = freshCanvas(); canvas.style.display = "";
     try { if (!hasGL()) throw new Error("WebGL indisponível"); map = chain3d = window.OI_chain.mount(canvas, $("tipSup"), S, handler, { light: !!light }); mode = "3d"; $("supMode").textContent = "Ver em 2D"; $("supMode").style.display = ""; }
     catch (e) { note = "O 3D não está disponível neste navegador (" + gpu() + ")."; console.warn(e); mode = null; use2d(); }
   }
-  $("supMode").onclick = () => { note = ""; triedLight = false; if (mode === "3d") { $("supply3d").style.display = "none"; map = null; mode = null; use2d(); intro(); } else { map = null; mode = null; use3d(); intro(); } };
+  $("supMode").onclick = () => { note = ""; triedLight = false; if (mode === "3d") use2d(); else use3d(); intro(); };
   use3d(); intro();
   $("supReset").onclick = () => map && map.reset();
 }

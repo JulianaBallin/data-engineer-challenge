@@ -40,14 +40,16 @@ window.OI_chain = (() => {
   const dashTex = canvasTex(16, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = "#f4f1e4"; g.fillRect(0, 6, w, 30); }, null);
 
   function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-  function label(text, sub) {
+  function label(text, sub, num) {
     const c = document.createElement("canvas"); c.width = 600; c.height = 170;
     const g = c.getContext("2d");
     g.shadowColor = "rgba(0,0,0,.25)"; g.shadowBlur = 14; g.shadowOffsetY = 4;
     g.fillStyle = "#ffffff"; rr(g, 14, 10, 572, 130, 36); g.fill();
     g.shadowColor = "transparent"; g.fillStyle = "#f6851b"; rr(g, 14, 10, 14, 130, 7); g.fill();
-    g.fillStyle = "#1d2125"; g.font = "bold 50px Inter, Arial, sans-serif"; g.textAlign = "center"; g.fillText(text, 306, 70);
-    g.fillStyle = "#e2761b"; g.font = "600 36px Inter, Arial, sans-serif"; g.fillText(sub, 306, 114);
+    const cx = num ? 344 : 306;
+    if (num) { g.fillStyle = "#f6851b"; g.beginPath(); g.arc(78, 75, 34, 0, 6.3); g.fill(); g.fillStyle = "#fff"; g.font = "bold 44px Inter, Arial, sans-serif"; g.textAlign = "center"; g.fillText(String(num), 78, 91); }
+    g.fillStyle = "#1d2125"; g.font = "bold 50px Inter, Arial, sans-serif"; g.textAlign = "center"; g.fillText(text, cx, 70);
+    g.fillStyle = "#e2761b"; g.font = `600 ${Math.max(24, 36 - Math.max(0, sub.length - 20) * 1.1)}px Inter, Arial, sans-serif`; g.fillText(sub, cx, 114);
     const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding;
     const s = new T.Sprite(new T.SpriteMaterial({ map: t, transparent: true, depthTest: false })); s.scale.set(10.5, 3, 1); s.renderOrder = 10; return s;
   }
@@ -134,12 +136,12 @@ window.OI_chain = (() => {
   function mount(canvas, tipEl, stages, onSelect, opts = {}) {
     const light = !!opts.light;  // modo leve: sem sombras nem antialias, para GPUs fracas
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const renderer = new T.WebGLRenderer({ canvas, antialias: !light, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(light ? 1 : Math.min(devicePixelRatio, 2)); renderer.shadowMap.enabled = !light; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    const renderer = new T.WebGLRenderer({ canvas, antialias: !light, alpha: true });
+    renderer.setPixelRatio(light ? 1 : Math.min(devicePixelRatio, 1.5)); renderer.shadowMap.enabled = !light; renderer.shadowMap.type = T.PCFShadowMap;
     renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92;
     const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, 0.5, 400);
     scene.add(new T.HemisphereLight(0xdff0ff, 0x6f8f55, 0.55));
-    const sun = new T.DirectionalLight(0xfff1d6, 0.95); sun.position.set(-40, 62, 34); sun.castShadow = !light; if (!light) sun.shadow.mapSize.set(2048, 2048);
+    const sun = new T.DirectionalLight(0xfff1d6, 0.95); sun.position.set(-40, 62, 34); sun.castShadow = !light; if (!light) sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 50, bottom: -50, near: 10, far: 180 }); sun.shadow.bias = -0.0004; scene.add(sun);
     const world = new T.Group(); scene.add(world);
 
@@ -176,7 +178,7 @@ window.OI_chain = (() => {
       g.position.set(x, 0, z); g.rotation.y = Math.atan2(bp.x - x, bp.z - z);
       Object.assign(g.userData, { i, s, home: new T.Vector3(x, 0, z), stopU: bu, front: new T.Vector3(x + (bp.x - x) * 0.55, 0, z + (bp.z - z) * 0.55) }); g.scale.setScalar(0.001); world.add(g);
       g.traverse((o) => { if (o.isMesh) o.userData.holder = g; });
-      const l = label(s.name, s.metric + (s.short ? " " + s.short : "")); l.position.set(x, 14.5, z); world.add(l); g.userData.label = l;
+      const l = label(s.name, s.metric + (s.short ? " " + s.short : ""), i + 1); l.position.set(x, 14.5, z); world.add(l); g.userData.label = l;
       // pilha de moedas proporcional ao gasto
       if (s.cost) { const n = Math.max(3, Math.round(s.cost * 34)), stack = new T.Group();
         for (let k = 0; k < n; k++) { const c = shadow(new T.Mesh(new T.CylinderGeometry(1.1, 1.1, 0.22, 24), std(0xe9b423, { metalness: 0.9, roughness: 0.28, emissive: 0x3a2800 }))); c.position.y = 0.11 + k * 0.23; stack.add(c); }
@@ -228,7 +230,7 @@ window.OI_chain = (() => {
     (function loop() {
       if (!canvas.isConnected || failed) return;
       try {
-      if (canvas.offsetParent !== null) {
+      if (canvas.offsetParent !== null && !document.hidden) {
         const t = clock.getElapsedTime(); if (!t0) t0 = t;
         if (auto) rotY += 0.0012;
         target.lerp(tgtGoal, 0.06); dist += (distGoal - dist) * 0.06;
@@ -265,7 +267,7 @@ window.OI_chain = (() => {
       } catch (e) { failed = true; console.error("Cadeia 3D:", e); onSelect && onSelect(-1, e); return; }
       requestAnimationFrame(loop);
     })();
-    return { select, reset, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };
+    return { select, reset, dispose: () => { failed = true; try { renderer.dispose(); renderer.forceContextLoss(); } catch {} }, toggleAuto: () => (auto = !auto), state: () => ({ at: run.at, next: run.next, waiting: run.wait > 0, u: +run.u.toFixed(3) }) };
   }
   return { mount };
 })();
